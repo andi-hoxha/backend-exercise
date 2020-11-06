@@ -7,4 +7,10 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 scalaVersion := "2.13.3"
 
-libraryDependencies += guice
+libraryDependencies ++= Seq(
+  guice,
+  "org.hibernate.validator" % "hibernate-validator" % "6.1.6.Final",
+  "junit" % "junit" % "4.12",
+  "org.projectlombok" % "lombok" % "1.18.12" % "provided",
+  "org.mongodb" % "mongodb-driver-sync" % "4.1.0"
+)
