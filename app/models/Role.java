@@ -9,5 +9,4 @@ import lombok.EqualsAndHashCode;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Role extends BaseModel{
     private String name;
-
 }

@@ -1,11 +1,12 @@
 package modules;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import mongo.IMongoDB;
 import mongo.InMemoryMongoDB;
 import mongo.MongoDB;
-import org.omg.CORBA.Environment;
+import play.Environment;
 import play.Logger;
 
 public class DatabaseModule extends AbstractModule {
@@ -13,6 +14,7 @@ public class DatabaseModule extends AbstractModule {
     private final Environment environment;
     private final Config config;
 
+    @Inject
     public DatabaseModule(Environment environment, Config config) {
         this.environment = environment;
         this.config = config;

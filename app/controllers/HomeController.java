@@ -1,6 +1,10 @@
 package controllers;
 
+import com.google.inject.Inject;
+import mongo.MongoDB;
 import play.mvc.*;
+
+import java.util.ArrayList;
 
 /**
  * This controller contains an action to handle HTTP requests
@@ -8,6 +12,8 @@ import play.mvc.*;
  */
 public class HomeController extends Controller {
 
+    @Inject
+    MongoDB mongoDB;
     /**
      * An action that renders an HTML page with a welcome message.
      * The configuration in the <code>routes</code> file means that
