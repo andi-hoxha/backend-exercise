@@ -14,6 +14,6 @@ libraryDependencies ++= Seq(
   "org.projectlombok" % "lombok" % "1.18.12" % "provided",
   "org.mongodb" % "mongodb-driver-sync" % "4.1.0",
   "io.jsonwebtoken" % "jjwt" % "0.9.1",
-  "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0"
+  "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.2.0"
 )
 
