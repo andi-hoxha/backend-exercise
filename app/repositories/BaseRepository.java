@@ -9,5 +9,6 @@ public interface BaseRepository<T> {
     T save (T t,String collectionName,Class<T> tClass);
     T update(T t,String id,String collectionName,Class<T> tClass);
     T delete (String id,String collectionName,Class<T> tClass);
-    T findById(String id,String collectionName,Class<T> tClass) throws NotFoundException;
+    T findById(String id,String collectionName,Class<T> tClass);
+    void saveAll(List<T> items,String collectionName,Class<T> tClass);
 }

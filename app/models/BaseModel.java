@@ -25,10 +25,8 @@ public abstract class BaseModel implements Cloneable, Serializable {
     private ObjectId id;
 
     @Setter(AccessLevel.NONE)
-    @BsonIgnore
     @JsonIgnore
     protected Date createdAt;
-    @BsonIgnore
     @JsonIgnore
     protected Date updatedAt;
     @JsonIgnore
