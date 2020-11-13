@@ -3,16 +3,22 @@ package services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.internal.operation.CreateIndexesOperation;
 import exceptions.NotFoundException;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
+import models.BaseModel;
+import models.Role;
 import models.User;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import play.libs.Json;
 import play.mvc.Http;
 
 import repositories.UserRepository;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Base64;
 import java.util.List;
@@ -28,6 +34,9 @@ public class UserService extends BaseService<User> implements UserRepository {
               String password = user.getPassword();
               String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
               user.setPassword(encodedPassword);
+              user.getRoles().forEach(role ->{
+                  role.setId(new ObjectId());
+              });
           });
            saveAll(users,"User",User.class);
            return Json.newObject();

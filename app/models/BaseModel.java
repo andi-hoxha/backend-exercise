@@ -24,36 +24,22 @@ public abstract class BaseModel implements Cloneable, Serializable {
     @JsonDeserialize(using = ObjectIdDeSerializer.class)
     private ObjectId id;
 
-    @Setter(AccessLevel.NONE)
-    @JsonIgnore
-    protected Date createdAt;
-    @JsonIgnore
-    protected Date updatedAt;
     @JsonIgnore
     private RecordStatus recordStatus = RecordStatus.ACTIVE;
 
     public void setId(ObjectId id) {
         if (id == null) {
             this.id = null;
-            this.createdAt = null;
             return;
         }
         this.id = id;
-        this.createdAt = new Date(id.getTimestamp());
     }
 
-    public Date getLastUpdate() {
-        if (updatedAt != null) {
-            return updatedAt;
-        }
-        return createdAt;
-    }
 
     @Override
     public BaseModel clone() throws CloneNotSupportedException {
         BaseModel clone = (BaseModel) super.clone();
         clone.setId(this.getId());
-        clone.setUpdatedAt(this.getUpdatedAt());
         clone.setRecordStatus(this.getRecordStatus());
         return clone;
     }
