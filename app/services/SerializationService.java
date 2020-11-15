@@ -63,8 +63,8 @@ public class SerializationService {
     }
 
 
-    public JsonNode fileToObjectNode(File file) throws IOException{
-        JsonParser parser = objectMapper.getFactory().createParser(file);
+    public JsonNode fileToObjectNode(Files.TemporaryFile file) throws IOException{
+        JsonParser parser = objectMapper.getFactory().createParser((File) file);
         JsonNode node = objectMapper.readTree(parser);
         parser.close();
         return node;
@@ -79,8 +79,8 @@ public class SerializationService {
             }
             try{
                 Files.TemporaryFile file = filePart.getRef();
-                File javaFile  = file.copyTo(new File("public/files/dummys.json")).toFile();
-                JsonNode content = this.fileToObjectNode(javaFile);
+                file.copyTo(Paths.get("public/files/dummys.json"),true);
+                JsonNode content = this.fileToObjectNode(file);
                 return parseJsonListOfType(content,objectClass);
             }catch (JsonProcessingException e){
                 throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"exception while parsing body"));

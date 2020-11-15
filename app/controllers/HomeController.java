@@ -1,14 +1,7 @@
 package controllers;
 
-import com.google.inject.Inject;
-import models.User;
-import mongo.MongoDB;
-import play.mvc.*;
-import services.SerializationService;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
+import play.mvc.*;
 
 /**
  * This controller contains an action to handle HTTP requests

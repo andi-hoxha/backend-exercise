@@ -3,7 +3,6 @@ package services;
 import com.google.common.base.Strings;
 import exceptions.RequestException;
 import models.User;
-import play.Logger;
 import play.mvc.Http;
 import utils.JwtUtil;
 
