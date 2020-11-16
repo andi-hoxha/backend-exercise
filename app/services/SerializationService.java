@@ -65,6 +65,7 @@ public class SerializationService {
 
     public JsonNode fileToObjectNode(Files.TemporaryFile file) throws IOException{
         JsonParser parser = objectMapper.getFactory().createParser((File) file);
+//        ((File) file).getAbsoluteFile();
         JsonNode node = objectMapper.readTree(parser);
         parser.close();
         return node;
