@@ -1,5 +1,6 @@
 package controllers;
 
+import actions.Authorize;
 import models.requests.AuthRequestModel;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;

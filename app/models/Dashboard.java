@@ -23,4 +23,6 @@ public class Dashboard extends BaseModel{
 
     private List<String> readACL;
     private List<String> writeACL;
+
+    List<Dashboard> children;
 }

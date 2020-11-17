@@ -11,6 +11,7 @@ import models.User;
 import mongo.IMongoDB;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.libs.typedmap.TypedKey;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -28,7 +29,7 @@ public class Authorize extends Action<Authorized> {
     public CompletionStage<Result> call(Http.Request req){
         Optional<String> header = req.header(JwtConstants.HEADER_KEY);
         if(!header.isPresent() || !header.get().startsWith(JwtConstants.TOKEN_PREFIX)){
-            return CompletableFuture.completedFuture(unauthorized("You are not authorized.Please login again."));
+            return CompletableFuture.completedFuture(unauthorized("Either header key or token prefix is missing.You are not authorized,please login again."));
         }
         String token = header.get().substring(JwtConstants.TOKEN_PREFIX_INDEX);
         if(Strings.isNullOrEmpty(token)){
@@ -50,6 +51,10 @@ public class Authorize extends Action<Authorized> {
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"User has not been found!"));
         }
 
-        return delegate.call(req);
+        return delegate.call(req.addAttr(Attrs.USER,user));
+    }
+
+    public static class Attrs{
+        public static final TypedKey<User> USER = TypedKey.create("user");
     }
 }

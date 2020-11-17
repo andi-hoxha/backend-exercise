@@ -8,12 +8,11 @@ import lombok.*;
 import mongo.serializers.ObjectIdDeSerializer;
 import mongo.serializers.ObjectIdStringSerializer;
 import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 import types.RecordStatus;
 
 import java.io.Serializable;
-import java.util.Date;
+
 
 @Data
 @EqualsAndHashCode(of = {"id"})

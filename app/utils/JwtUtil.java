@@ -1,13 +1,17 @@
 package utils;
 
 import constants.JwtConstants;
+import exceptions.RequestException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import models.User;
+import play.mvc.Http;
 
 import java.util.Date;
+import java.util.concurrent.CompletionException;
 
 @Slf4j
 public class JwtUtil {
@@ -23,11 +27,17 @@ public class JwtUtil {
     }
 
     public static Claims parse(String token){
-        Claims claims = Jwts.parser()
-                .setSigningKey(JwtConstants.SECRET_ACCESS)
-                .parseClaimsJws(token)
-                .getBody();
-        return claims;
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(JwtConstants.SECRET_ACCESS)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims;
+        }catch (SignatureException e){
+            throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"JWT token does not match locally computed signature.JWT token is not valid"));
+        }catch (Exception e){
+            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Exception while parsing JWT token"));
+        }
     }
 
 }
