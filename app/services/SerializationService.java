@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import exceptions.RequestException;
 import play.libs.Files;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
+import utils.HibernateValidator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -52,7 +54,12 @@ public class SerializationService {
             if(!body.isPresent()){
                 throw new RequestException(Http.Status.BAD_REQUEST,"exception while parsing body");
             }
-            return body.get();
+            T object = body.get();
+            String errors = HibernateValidator.validate(object);
+            if(!Strings.isNullOrEmpty(errors)){
+                throw new RequestException(Http.Status.BAD_REQUEST,"exception while parsing body.Check your body request");
+            }
+            return object;
         }catch (RequestException ex){
             ex.printStackTrace();
             throw new CompletionException(ex);
@@ -101,6 +108,11 @@ public class SerializationService {
             }
             List<T> list = new ArrayList<>();
             for (JsonNode node: json) {
+                T object = Json.fromJson(node,type);
+                String errors = HibernateValidator.validate(object);
+                if(!Strings.isNullOrEmpty(errors)){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"exception while validating request.Please check your request body");
+                }
                 list.add(Json.fromJson(node, type));
             }
             return list;

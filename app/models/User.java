@@ -1,8 +1,11 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -18,6 +21,11 @@ public class User extends BaseModel {
     String password;
     @NotEmpty
     String email;
+
+    @BsonIgnore
+    @JsonIgnore
+    @JsonProperty("roleIds")
+    List<String> roleIds;
 
     List<Role> roles;
 

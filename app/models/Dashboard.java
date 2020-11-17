@@ -1,11 +1,13 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import mongo.serializers.MongoDateConverter;
 
 import javax.validation.constraints.NotEmpty;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -16,13 +18,14 @@ public class Dashboard extends BaseModel{
     private String name;
     @NotEmpty
     private String description;
-    @NotEmpty
     private String parentId;
-    @NotEmpty
-    private Timestamp createdAt;
+
+    @JsonSerialize(using = MongoDateConverter.class)
+    private Date createdAt;
 
     private List<String> readACL;
     private List<String> writeACL;
 
     List<Dashboard> children;
+
 }
