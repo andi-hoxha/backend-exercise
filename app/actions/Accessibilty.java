@@ -41,7 +41,7 @@ public class Accessibilty extends Action<AccessControl> {
         if (!resourceId.isPresent()) {
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "There is no id inside of request URI"));
         }
-        parametersCheck(user,resourceId.get(),COLLECTION_NAME,OBJECT_CLASS);
+        parametersCheck(user, resourceId.get(), COLLECTION_NAME, OBJECT_CLASS);
 
         Object resource;
         if (configuration.key().equalsIgnoreCase("Read")) {
