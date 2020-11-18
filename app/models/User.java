@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class User extends BaseModel {
     String username;
     @NotEmpty
     String password;
-    @NotEmpty
+    @Email(message = "Email should be valid")
     String email;
 
     @BsonIgnore

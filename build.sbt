@@ -9,6 +9,7 @@ scalaVersion := "2.13.3"
 
 libraryDependencies ++= Seq(
   guice,
+  ehcache,
   "org.hibernate.validator" % "hibernate-validator" % "6.1.6.Final",
   "junit" % "junit" % "4.12",
   "org.projectlombok" % "lombok" % "1.18.12",

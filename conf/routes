@@ -12,6 +12,9 @@ POST    /api/users                  controllers.UserController.saveUsers(request
 
 POST    /api/authenticate           controllers.AuthenticationController.authenticate(request:Request)
 
+# Testing routes
+GET     /api/dashboard/:id/content              controllers.TestController.getId(request:Request,id:String)
+
 GET     /api/dashboard              controllers.TestController.getAll(request:Request)
 POST    /api/dashboard             controllers.TestController.create(request:Request)
 PUT     /api/dashboard/:id          controllers.TestController.update(request:Request,id:String)
