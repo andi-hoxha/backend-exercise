@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import mongo.serializers.MongoDateConverter;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 

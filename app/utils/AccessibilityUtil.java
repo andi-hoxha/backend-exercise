@@ -11,51 +11,48 @@ import org.bson.types.ObjectId;
 import play.mvc.Http;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
+@Singleton
 public class AccessibilityUtil {
 
     @Inject
-    private static IMongoDB mongoDB;
+    private IMongoDB mongoDB;
 
-
-    public static <T> boolean readACL(User user, String resourceId,String collectionName,Class<T> objectClass){
+    public  <T> boolean readACL(User user, String resourceId,String collectionName,Class<T> objectClass){
         try{
             parametersCheck(user,resourceId,collectionName,objectClass);
             List<String> roles = user.getRoles().stream().map(BaseModel::getId).map(ObjectId::toHexString).collect(Collectors.toList());
             roles.add(user.getId().toHexString());
             T resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
                     .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("readACL",roles)),
-                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),(Filters.or(Filters.size("readACL",0),Filters.size("writeACL",0)))))).
-                            first();
+                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),(Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))))
+                    .first();
             return resource != null;
         }catch (RequestException e){
             throw new CompletionException(e);
-        }catch (Exception e){
-            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
         }
     }
 
-    public static <T> boolean writeACL(User user, String resourceId,String collectionName,Class<T> objectClass){
+    public  <T> boolean writeACL(User user, String resourceId,String collectionName,Class<T> objectClass){
         try{
             parametersCheck(user,resourceId,collectionName,objectClass);
             List<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
             roles.add(user.getId().toHexString());
             T resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
                     .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("writeACL",roles)),
-                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.or(Filters.size("readACL",0),Filters.size("writeACL",0))))).
+                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))).
                             first();
             return resource != null;
         }catch (RequestException e){
             throw new CompletionException(e);
-        }catch (Exception e){
-            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
         }
     }
 
-    public static <T> void parametersCheck(User user,String resourceId,String collectionName,Class<T> objectClass) throws RequestException {
+    public  <T> void parametersCheck(User user,String resourceId,String collectionName,Class<T> objectClass) throws RequestException {
         if(user == null){
             throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be empty");
         }

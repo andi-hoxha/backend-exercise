@@ -15,6 +15,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -39,6 +40,6 @@ public abstract class BaseContent extends BaseModel implements Content {
     @NotNull
     private Type type = Type.NONE;
 
-    private List<String> readACL;
-    private List<String> writeACL;
+    private List<String> readACL = Collections.emptyList();
+    private List<String> writeACL = Collections.emptyList();
 }

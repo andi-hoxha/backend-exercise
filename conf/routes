@@ -12,10 +12,20 @@ POST    /api/users                  controllers.UserController.saveUsers(request
 
 POST    /api/authenticate           controllers.AuthenticationController.authenticate(request:Request)
 
-# Testing routes
-GET     /api/dashboard/:id/content              controllers.TestController.getId(request:Request,id:String)
+GET     /api/dashboard                          controllers.DashboardController.getAll(request:Request)
+GET     /api/dashboard/hierarchy                controllers.DashboardController.getAllHierarchy(request:Request)
+GET     /api/dashboard/:id                      controllers.DashboardController.getDashboardById(request:Request,id:String)
+GET     /api/dashboard/:id/children             controllers.DashboardController.getDashboardChildren(request:Request,id:String)
+POST    /api/dashboard                          controllers.DashboardController.create(request:Request)
+PUT     /api/dashboard/:id                      controllers.DashboardController.update(request:Request,id:String)
+DELETE  /api/dashboard/:id                      controllers.DashboardController.delete(request:Request,id:String)
 
-GET     /api/dashboard              controllers.TestController.getAll(request:Request)
-POST    /api/dashboard             controllers.TestController.create(request:Request)
-PUT     /api/dashboard/:id          controllers.TestController.update(request:Request,id:String)
-DELETE  /api/dashboard/:id          controllers.TestController.delete(request:Request,id:String)
+
+GET    /api/dashboard/:id/content               controllers.ContentController.getAll(request:Request,id:String)
+POST   /api/dashboard/:id/content               controllers.ContentController.createContent(request:Request,id:String)
+PUT    /api/dashboard/content/:id               controllers.ContentController.updateContent(request:Request,id:String)
+DELETE /api/dashboard/content/:id               controllers.ContentController.deleteContent(request:Request,id:String)
+
+
+
+

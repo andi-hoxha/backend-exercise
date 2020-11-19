@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
-import javax.validation.constraints.NotEmpty;
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
 
 @BsonDiscriminator(key = "type",value = "LINE")
@@ -13,8 +14,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LineContent extends BaseContent implements Content{
 
-    @NotEmpty
-    private List<Datas> data;
+    @Nullable
+    private List<Datas> data = Collections.emptyList();
 
     @Override
     public @NotNull Type getType() {
