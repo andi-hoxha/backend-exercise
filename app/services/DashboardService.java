@@ -43,8 +43,7 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> update(User user, Dashboard dashboard, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (publicDashboards().stream().noneMatch(resource -> resource.getId().toHexString().equals(dashboardId)) ||
-                    !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.WRITE)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to modify this dashboard.Please get");
                 }
                 return update(dashboard,dashboardId,"Dashboard",Dashboard.class);
@@ -59,8 +58,7 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> delete(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (publicDashboards().stream().noneMatch(resource -> resource.getId().toHexString().equals(dashboardId)) ||
-                   !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this dashboard");
                 }
                 return delete(dashboardId,"Dashboard",Dashboard.class);
@@ -75,9 +73,8 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> getDashboardById(User user,String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (publicDashboards().stream().noneMatch(resource -> resource.getId().toHexString().equals(id)) ||
-                        (!accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.READ) ||
-                    !accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.WRITE))) {
+                if (!accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.READ) ||
+                    !accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to view this dashboard");
                 }
                 return findById(id,"Dashboard",Dashboard.class);
