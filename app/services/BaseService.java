@@ -9,7 +9,6 @@ import exceptions.RequestException;
 import mongo.IMongoDB;
 import org.bson.BsonValue;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.mvc.Http;
 import repositories.BaseRepository;
 
@@ -17,6 +16,8 @@ import repositories.BaseRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
+
+import static com.mongodb.client.model.Filters.*;
 
 public class BaseService<T> implements BaseRepository<T> {
 
@@ -39,7 +40,7 @@ public class BaseService<T> implements BaseRepository<T> {
                 throw new IllegalArgumentException("Collection Name or Object class cannot be null or empty");
             }
             BsonValue id = getCollection(collectionName, tClass).insertOne(t).getInsertedId();
-            return getCollection(collectionName, tClass).find(Filters.eq("_id", id)).first();
+            return getCollection(collectionName, tClass).find(eq("_id", id)).first();
         }catch (IllegalArgumentException e){
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Found null"));
         }
@@ -51,7 +52,7 @@ public class BaseService<T> implements BaseRepository<T> {
             if(t == null){
                 throw new IllegalArgumentException("Object cannot be empty");
             }
-           T updated = getCollection(collectionName,tClass).findOneAndReplace(Filters.eq("_id",new ObjectId(id)),t);
+           T updated = getCollection(collectionName,tClass).findOneAndReplace(eq("_id",new ObjectId(id)),t);
             if(updated == null){
                 throw new NotFoundException("No records has been found or updated!");
             }
@@ -69,7 +70,7 @@ public class BaseService<T> implements BaseRepository<T> {
             if(!ObjectId.isValid(id)){
                 throw new IllegalArgumentException("Invalid Object Id found ---> ID : " + id);
             }
-           T deletedRecord = getCollection(collectionName,tClass).findOneAndDelete(Filters.eq("_id",new ObjectId(id)));
+           T deletedRecord = getCollection(collectionName,tClass).findOneAndDelete(eq("_id",new ObjectId(id)));
            if(deletedRecord == null){
                throw new NotFoundException("Record has not been found or deleted");
            }
@@ -91,7 +92,7 @@ public class BaseService<T> implements BaseRepository<T> {
             if (!ObjectId.isValid(id)) {
                 throw new IllegalArgumentException("Invalid Object Id");
             }
-            T found = getCollection(collectionName, tClass).find(Filters.eq("_id", new ObjectId(id))).first();
+            T found = getCollection(collectionName, tClass).find(eq("_id", new ObjectId(id))).first();
             if (found == null) {
                 throw new NotFoundException("Cannot find any record having this ID: " + id);
             }

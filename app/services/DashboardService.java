@@ -1,6 +1,6 @@
 package services;
 
-import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.*;
 import exceptions.RequestException;
 import models.Dashboard;
 import models.Role;
@@ -122,7 +122,7 @@ public class DashboardService extends BaseService<Dashboard> {
 
     protected List<Dashboard> publicDashboards(){
         return getCollection("Dashboard", Dashboard.class)
-                .find(Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))
+                .find(and(size("readACL", 0), size("writeACL", 0)))
                 .into(new ArrayList<>());
     }
 
@@ -130,7 +130,7 @@ public class DashboardService extends BaseService<Dashboard> {
         List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
         rolesAndUserId.add(user.getId().toHexString());
        return getCollection("Dashboard", Dashboard.class)
-                .find(Filters.or(Filters.in("readACL", rolesAndUserId),Filters.in("writeACL",rolesAndUserId)))
+                .find(or(in("readACL", rolesAndUserId),in("writeACL",rolesAndUserId)))
                 .into(new ArrayList<>());
     }
 

@@ -2,7 +2,7 @@ package services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.*;
 import exceptions.NotFoundException;
 import exceptions.RequestException;
 import models.Role;
@@ -52,7 +52,7 @@ public class UserService extends BaseService<User> implements UserRepository {
                 if(Strings.isNullOrEmpty(username)){
                     throw new IllegalArgumentException("Email cannot be empty!");
                 }
-                User foundUser = getCollection("User",User.class).find(Filters.eq("username",username)).first();
+                User foundUser = getCollection("User",User.class).find(eq("username",username)).first();
                 if(foundUser == null){
                     throw new NotFoundException("Cannot find any user with this email : " + username);
                }

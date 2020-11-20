@@ -1,7 +1,6 @@
 package utils;
 
 import com.google.common.base.Strings;
-import com.mongodb.client.model.Filters;
 import exceptions.RequestException;
 import models.BaseModel;
 import models.User;
@@ -15,6 +14,8 @@ import javax.inject.Singleton;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
+
+import static com.mongodb.client.model.Filters.*;
 
 @Singleton
 public class AccessibilityUtil {
@@ -30,14 +31,14 @@ public class AccessibilityUtil {
             T resource = null;
             if(userACL.equals(UserACL.READ)) {
                 resource = mongoDB.getMongoDatabase().getCollection(collectionName, objectClass)
-                        .find(Filters.or(Filters.and(Filters.eq("_id", new ObjectId(resourceId)), Filters.in("readACL", roles)),
-                                Filters.and(Filters.eq("_id", new ObjectId(resourceId)), (Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0))))))
+                        .find(or(and(eq("_id", new ObjectId(resourceId)), in("readACL", roles)),
+                                and(eq("_id", new ObjectId(resourceId)), (and(size("readACL", 0), size("writeACL", 0))))))
                         .first();
             }
             if(userACL.equals(UserACL.WRITE)){
                 resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
-                        .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("writeACL",roles)),
-                                Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))).
+                        .find(or(and(eq("_id",new ObjectId(resourceId)),in("writeACL",roles)),
+                                and(eq("_id",new ObjectId(resourceId)),and(size("readACL",0),size("writeACL",0))))).
                         first();
             }
                 return resource != null;

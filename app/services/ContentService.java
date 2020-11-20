@@ -1,6 +1,6 @@
 package services;
 
-import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.*;
 import exceptions.RequestException;
 import lombok.extern.slf4j.Slf4j;
 import models.Dashboard;
@@ -111,8 +111,8 @@ public class ContentService extends BaseService<BaseContent> {
 
     private List<BaseContent> publicContents(String dashboardId){
         return getCollection("Content", BaseContent.class)
-                .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
-                        (Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))))
+                .find(and(eq("dashboardId", new ObjectId(dashboardId)),
+                        (and(size("readACL", 0), size("writeACL", 0)))))
                 .into(new ArrayList<>());
     }
 
@@ -121,8 +121,8 @@ public class ContentService extends BaseService<BaseContent> {
         rolesAndUserId.add(user.getId().toHexString());
 
         return getCollection("Content", BaseContent.class)
-                .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
-                        Filters.or(Filters.in("readACL", rolesAndUserId), Filters.in("writeACL", rolesAndUserId))
+                .find(and(eq("dashboardId", new ObjectId(dashboardId)),
+                        or(in("readACL", rolesAndUserId),in("writeACL", rolesAndUserId))
                 )).into(new ArrayList<>());
     }
 }

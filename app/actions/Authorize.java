@@ -2,7 +2,7 @@ package actions;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.*;
 import constants.JwtConstants;
 import exceptions.RequestException;
 import io.jsonwebtoken.Claims;
@@ -46,7 +46,7 @@ public class Authorize extends Action<Authorized> {
         if(!ObjectId.isValid(userId)){
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"User Object Id is invalid.Please provide a valid Object Id"));
         }
-        User user = mongoDB.getMongoDatabase().getCollection("User", User.class).find(Filters.eq("_id",new ObjectId(userId))).first();
+        User user = mongoDB.getMongoDatabase().getCollection("User", User.class).find(eq("_id",new ObjectId(userId))).first();
         if(user == null){
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"User has not been found!"));
         }
