@@ -4,11 +4,11 @@ import com.google.common.base.Strings;
 import com.mongodb.client.model.Filters;
 import exceptions.RequestException;
 import models.BaseModel;
-import models.Role;
 import models.User;
 import mongo.IMongoDB;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
+import types.UserACL;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,31 +22,25 @@ public class AccessibilityUtil {
     @Inject
     private IMongoDB mongoDB;
 
-    public  <T> boolean readACL(User user, String resourceId,String collectionName,Class<T> objectClass){
+    public <T> boolean withACL(User user, String resourceId, String collectionName, Class<T> objectClass, UserACL userACL){
         try{
             parametersCheck(user,resourceId,collectionName,objectClass);
             List<String> roles = user.getRoles().stream().map(BaseModel::getId).map(ObjectId::toHexString).collect(Collectors.toList());
             roles.add(user.getId().toHexString());
-            T resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
-                    .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("readACL",roles)),
-                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),(Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))))
-                    .first();
-            return resource != null;
-        }catch (RequestException e){
-            throw new CompletionException(e);
-        }
-    }
-
-    public  <T> boolean writeACL(User user, String resourceId,String collectionName,Class<T> objectClass){
-        try{
-            parametersCheck(user,resourceId,collectionName,objectClass);
-            List<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-            roles.add(user.getId().toHexString());
-            T resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
-                    .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("writeACL",roles)),
-                            Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))).
-                            first();
-            return resource != null;
+            T resource = null;
+            if(userACL.equals(UserACL.READ)) {
+                resource = mongoDB.getMongoDatabase().getCollection(collectionName, objectClass)
+                        .find(Filters.or(Filters.and(Filters.eq("_id", new ObjectId(resourceId)), Filters.in("readACL", roles)),
+                                Filters.and(Filters.eq("_id", new ObjectId(resourceId)), (Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0))))))
+                        .first();
+            }
+            if(userACL.equals(UserACL.WRITE)){
+                resource = mongoDB.getMongoDatabase().getCollection(collectionName,objectClass)
+                        .find(Filters.or(Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.in("writeACL",roles)),
+                                Filters.and(Filters.eq("_id",new ObjectId(resourceId)),Filters.and(Filters.size("readACL",0),Filters.size("writeACL",0))))).
+                        first();
+            }
+                return resource != null;
         }catch (RequestException e){
             throw new CompletionException(e);
         }

@@ -32,11 +32,16 @@ public class JwtUtil {
                     .setSigningKey(JwtConstants.SECRET_ACCESS)
                     .parseClaimsJws(token)
                     .getBody();
+            if(claims.isEmpty()){
+                throw new RequestException(Http.Status.UNAUTHORIZED,"Your session has been expired please login again");
+            }
             return claims;
         }catch (SignatureException e){
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"JWT token does not match locally computed signature.JWT token is not valid"));
+        }catch (RequestException e){
+            throw new CompletionException(e);
         }catch (Exception e){
-            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Exception while parsing JWT token"));
+            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Authentication service unavailable"));
         }
     }
 

@@ -9,6 +9,7 @@ import models.User;
 import models.content.BaseContent;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
+import types.UserACL;
 import utils.AccessibilityUtil;
 
 import javax.inject.Inject;
@@ -29,18 +30,8 @@ public class ContentService extends BaseService<BaseContent> {
 
     public CompletableFuture<List<BaseContent>> getAll(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
-            List<BaseContent> publicContents = getCollection("Content", BaseContent.class)
-                    .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
-                            (Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))))
-                    .into(new ArrayList<>());
-
-            List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-            rolesAndUserId.add(user.getId().toHexString());
-
-            List<BaseContent> privateContents = getCollection("Content", BaseContent.class)
-                    .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
-                            Filters.or(Filters.in("readACL", rolesAndUserId), Filters.in("writeACL", rolesAndUserId))
-                    )).into(new ArrayList<>());
+            List<BaseContent> publicContents = publicContents(dashboardId);
+            List<BaseContent> privateContents = privateContents(dashboardId,user);
 
             publicContents.addAll(privateContents);// merge two lists
             if (publicContents.isEmpty()) {
@@ -56,7 +47,8 @@ public class ContentService extends BaseService<BaseContent> {
                 if (!ObjectId.isValid(dashboardId)) {
                     throw new RequestException(Http.Status.BAD_REQUEST, "Dashboard id is not a valid id");
                 }
-                if (!accessibilityUtil.readACL(user, dashboardId, "Dashboard", Dashboard.class) || !accessibilityUtil.writeACL(user, dashboardId, "Dashboard", Dashboard.class)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.READ) ||
+                    !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to read or write content in this dashboard: " + dashboardId);
                 }
                 content.setWriteACL(Arrays.asList(user.getId().toHexString()));
@@ -74,7 +66,7 @@ public class ContentService extends BaseService<BaseContent> {
     public CompletableFuture<BaseContent> update(BaseContent content, String id, User user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.writeACL(user, id, "Content", BaseContent.class)) {
+                if (!accessibilityUtil.withACL(user, id, "Content", BaseContent.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to modify this content.Please get");
                 }
                 return update(content, id, "Content", BaseContent.class);
@@ -89,7 +81,7 @@ public class ContentService extends BaseService<BaseContent> {
     public CompletableFuture<BaseContent> delete(User user, String contentId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.writeACL(user, contentId, "Content", BaseContent.class)) {
+                if (!accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this content");
                 }
                 return delete(contentId, "Content", BaseContent.class);
@@ -104,7 +96,7 @@ public class ContentService extends BaseService<BaseContent> {
     public CompletableFuture<BaseContent> getContentById(User user, String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.readACL(user, id, "Content", BaseContent.class)) {
+                if (!accessibilityUtil.withACL(user, id, "Content", BaseContent.class,UserACL.READ)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to view this dashboard");
                 }
                 return findById(id, "Content", BaseContent.class);
@@ -114,5 +106,23 @@ public class ContentService extends BaseService<BaseContent> {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
         });
+    }
+
+
+    private List<BaseContent> publicContents(String dashboardId){
+        return getCollection("Content", BaseContent.class)
+                .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
+                        (Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))))
+                .into(new ArrayList<>());
+    }
+
+    private List<BaseContent> privateContents(String dashboardId,User user){
+        List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+        rolesAndUserId.add(user.getId().toHexString());
+
+        return getCollection("Content", BaseContent.class)
+                .find(Filters.and(Filters.eq("dashboardId", new ObjectId(dashboardId)),
+                        Filters.or(Filters.in("readACL", rolesAndUserId), Filters.in("writeACL", rolesAndUserId))
+                )).into(new ArrayList<>());
     }
 }

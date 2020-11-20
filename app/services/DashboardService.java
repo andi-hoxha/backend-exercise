@@ -6,6 +6,7 @@ import models.Dashboard;
 import models.Role;
 import models.User;
 import play.mvc.Http;
+import types.UserACL;
 import utils.AccessibilityUtil;
 
 import javax.inject.Inject;
@@ -25,16 +26,8 @@ public class DashboardService extends BaseService<Dashboard> {
 
     public CompletableFuture<List<Dashboard>> getAll(User user) {
             return CompletableFuture.supplyAsync(() -> {
-                List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-                rolesAndUserId.add(user.getId().toHexString());
-
-                List<Dashboard> publicDashboards = getCollection("Dashboard", Dashboard.class)
-                        .find(Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))
-                        .into(new ArrayList<>());
-
-                List<Dashboard> privateDashboards = getCollection("Dashboard", Dashboard.class)
-                        .find(Filters.or(Filters.in("readACL", rolesAndUserId),Filters.in("writeACL",rolesAndUserId)))
-                        .into(new ArrayList<>());
+                List<Dashboard> publicDashboards = publicDashboards();
+                List<Dashboard> privateDashboards = privateDashboards(user);
                 publicDashboards.addAll(privateDashboards); // merge two lists
                 return publicDashboards.stream().distinct().collect(Collectors.toList()); // return List of all dashboards that user has access
             });
@@ -50,7 +43,7 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> update(User user, Dashboard dashboard, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.writeACL(user, dashboardId, "Dashboard", Dashboard.class)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to modify this dashboard.Please get");
                 }
                 return update(dashboard,dashboardId,"Dashboard",Dashboard.class);
@@ -65,7 +58,7 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> delete(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.writeACL(user, dashboardId, "Dashboard", Dashboard.class)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this dashboard");
                 }
                 return delete(dashboardId,"Dashboard",Dashboard.class);
@@ -80,7 +73,8 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<Dashboard> getDashboardById(User user,String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.readACL(user, id, "Dashboard", Dashboard.class) || !accessibilityUtil.writeACL(user, id, "Dashboard", Dashboard.class)) {
+                if (!accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.READ) ||
+                    !accessibilityUtil.withACL(user, id, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to view this dashboard");
                 }
                 return findById(id,"Dashboard",Dashboard.class);
@@ -124,6 +118,20 @@ public class DashboardService extends BaseService<Dashboard> {
                 .collect(Collectors.toList());
         dashboard.setChildren(children);
         return dashboard;
+    }
+
+    private List<Dashboard> publicDashboards(){
+        return getCollection("Dashboard", Dashboard.class)
+                .find(Filters.and(Filters.size("readACL", 0), Filters.size("writeACL", 0)))
+                .into(new ArrayList<>());
+    }
+
+    private List<Dashboard> privateDashboards(User user){
+        List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+        rolesAndUserId.add(user.getId().toHexString());
+       return getCollection("Dashboard", Dashboard.class)
+                .find(Filters.or(Filters.in("readACL", rolesAndUserId),Filters.in("writeACL",rolesAndUserId)))
+                .into(new ArrayList<>());
     }
 
 }
