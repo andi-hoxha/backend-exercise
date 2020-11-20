@@ -41,7 +41,6 @@ public class BaseService<T> implements BaseRepository<T> {
             BsonValue id = getCollection(collectionName, tClass).insertOne(t).getInsertedId();
             return getCollection(collectionName, tClass).find(Filters.eq("_id", id)).first();
         }catch (IllegalArgumentException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Found null"));
         }
     }
@@ -58,10 +57,8 @@ public class BaseService<T> implements BaseRepository<T> {
             }
             return updated;
         }catch (IllegalArgumentException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Found null"));
         }catch (NotFoundException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"Record not found"));
         }
     }
@@ -78,10 +75,8 @@ public class BaseService<T> implements BaseRepository<T> {
            }
            return deletedRecord;
         }catch (IllegalArgumentException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Found null"));
         }catch (NotFoundException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"Record not found"));
         }
     }
@@ -102,10 +97,8 @@ public class BaseService<T> implements BaseRepository<T> {
             }
             return found;
         }catch (IllegalArgumentException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Found null"));
         }catch (NotFoundException e){
-            Logger.of(this.getClass()).debug("EXCEPTION CAUGHT ====> " + e.getMessage());
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"Record not found"));
         }
 
