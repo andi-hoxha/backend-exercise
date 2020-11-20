@@ -28,6 +28,9 @@ public class ContentService extends BaseService<BaseContent> {
     @Inject
     AccessibilityUtil accessibilityUtil;
 
+    @Inject
+    DashboardService dashboardService;
+
     public CompletableFuture<List<BaseContent>> getAll(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             List<BaseContent> publicContents = publicContents(dashboardId);
@@ -47,8 +50,9 @@ public class ContentService extends BaseService<BaseContent> {
                 if (!ObjectId.isValid(dashboardId)) {
                     throw new RequestException(Http.Status.BAD_REQUEST, "Dashboard id is not a valid id");
                 }
-                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.READ) ||
-                    !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
+                if (dashboardService.publicDashboards().stream().noneMatch(x-> x.getId().toHexString().equals(dashboardId)) ||
+                    (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.READ) ||
+                    !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE))) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to read or write content in this dashboard: " + dashboardId);
                 }
                 content.setWriteACL(Arrays.asList(user.getId().toHexString()));
@@ -63,13 +67,14 @@ public class ContentService extends BaseService<BaseContent> {
         });
     }
 
-    public CompletableFuture<BaseContent> update(BaseContent content, String id, User user) {
+    public CompletableFuture<BaseContent> update(BaseContent content,String dashboardId,String contentId, User user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.withACL(user, id, "Content", BaseContent.class,UserACL.WRITE)) {
+                if (publicContents(dashboardId).stream().noneMatch(x -> x.getId().toHexString().equals(contentId)) ||
+                    !accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to modify this content.Please get");
                 }
-                return update(content, id, "Content", BaseContent.class);
+                return update(content, contentId, "Content", BaseContent.class);
             } catch (RequestException e) {
                 throw new CompletionException(e);
             } catch (Exception e) {
@@ -78,10 +83,11 @@ public class ContentService extends BaseService<BaseContent> {
         });
     }
 
-    public CompletableFuture<BaseContent> delete(User user, String contentId) {
+    public CompletableFuture<BaseContent> delete(User user,String dashboardId,String contentId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
+                if (publicContents(dashboardId).stream().noneMatch(x -> x.getId().toHexString().equals(contentId)) ||
+                    !accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this content");
                 }
                 return delete(contentId, "Content", BaseContent.class);

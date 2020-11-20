@@ -23,8 +23,8 @@ DELETE  /api/dashboard/:id                      controllers.DashboardController.
 
 GET    /api/dashboard/:id/content               controllers.ContentController.getAll(request:Request,id:String)
 POST   /api/dashboard/:id/content               controllers.ContentController.createContent(request:Request,id:String)
-PUT    /api/dashboard/content/:id               controllers.ContentController.updateContent(request:Request,id:String)
-DELETE /api/dashboard/content/:id               controllers.ContentController.deleteContent(request:Request,id:String)
+PUT    /api/dashboard/:id/content/:contentId    controllers.ContentController.updateContent(request:Request,id:String,contentId:String)
+DELETE /api/dashboard/:id/content/:contentId    controllers.ContentController.deleteContent(request:Request,id:String,contentId:String)
 
 
 

@@ -56,18 +56,18 @@ public class ContentController extends Controller {
                 .exceptionally(DatabaseUtil::throwableToResult);
     }
 
-    public CompletableFuture<Result> updateContent(Http.Request request,String contentId){
+    public CompletableFuture<Result> updateContent(Http.Request request,String dashboardId,String contentId){
         User user = request.attrs().get(Authorize.Attrs.USER);
         return serializationService.parseBodyOfType(request,BaseContent.class)
-                .thenCompose(data -> contentService.update(data,contentId,user))
+                .thenCompose(data -> contentService.update(data,dashboardId,contentId,user))
                 .thenCompose(res -> serializationService.toJsonNode(res))
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);
     }
 
-    public CompletableFuture<Result> deleteContent(Http.Request request,String id){
+    public CompletableFuture<Result> deleteContent(Http.Request request,String dashboardId,String contentId){
         User user = request.attrs().get(Authorize.Attrs.USER);
-        return contentService.delete(user,id)
+        return contentService.delete(user,dashboardId,contentId)
                 .thenCompose(res -> serializationService.toJsonNode(res))
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);
