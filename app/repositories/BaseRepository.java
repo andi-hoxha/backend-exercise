@@ -1,6 +1,5 @@
 package repositories;
 
-import exceptions.NotFoundException;
 import org.bson.conversions.Bson;
 
 import java.util.List;

@@ -2,6 +2,7 @@ package controllers;
 
 import actions.Authorize;
 import actions.Authorized;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Dashboard;
 import models.User;
@@ -72,6 +73,5 @@ public class ContentController extends Controller {
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);
     }
-
 
 }

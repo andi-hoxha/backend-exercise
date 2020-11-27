@@ -2,11 +2,11 @@ package services;
 
 import com.google.common.base.Strings;
 import com.mongodb.client.model.Updates;
+import constants.CollectionNames;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
 import lombok.extern.slf4j.Slf4j;
 import models.User;
-import play.Logger;
 import play.mvc.Http;
 import utils.JwtUtil;
 
@@ -43,7 +43,7 @@ public class AuthService {
                 }
                 String accessToken = JwtUtil.getAccessToken(foundUser);
                 foundUser.setAccessToken(accessToken);
-                userService.getCollection("User",User.class).updateOne(eq("_id",foundUser.getId()), Updates.set("accessToken",accessToken));
+                userService.getCollection(CollectionNames.USER,User.class).updateOne(eq("_id",foundUser.getId()), Updates.set("accessToken",accessToken));
                 return accessToken;
             }catch (RequestException e){
                 throw new CompletionException(e);

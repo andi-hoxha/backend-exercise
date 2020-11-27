@@ -48,7 +48,7 @@ public class AccessibilityUtil {
         }
     }
 
-    public  <T> void parametersCheck(User user,String resourceId,String collectionName,Class<T> objectClass) throws RequestException {
+    public <T> void parametersCheck(User user,String resourceId,String collectionName,Class<T> objectClass) throws RequestException {
         if(user == null){
             throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be empty");
         }

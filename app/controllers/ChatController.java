@@ -4,20 +4,17 @@ import actions.Authorize;
 import actions.Authorized;
 import actors.ChatActor;
 import akka.actor.ActorSystem;
-import akka.cluster.Cluster;
 import akka.stream.Materializer;
+import constants.CollectionNames;
 import models.ChatRoom;
 import models.User;
-import mongo.IMongoDB;
 import play.libs.F;
-import play.libs.concurrent.HttpExecutionContext;
 import play.libs.streams.ActorFlow;
 import play.mvc.*;
 import services.ChatRoomService;
 import services.SerializationService;
 import services.UserService;
 import utils.DatabaseUtil;
-import utils.JwtUtil;
 import utils.ServiceUtil;
 
 import javax.inject.Inject;
@@ -41,8 +38,14 @@ public class ChatController extends Controller {
     public WebSocket chat(String roomId,String token){
         User user = ServiceUtil.getUser(userService,token);
         return WebSocket.Text.acceptOrResult((req) -> {
-           if(user == null || !ServiceUtil.hasAccess(chatRoomService,roomId,user)){
-               return CompletableFuture.completedFuture(F.Either.Left(forbidden("You are not logged in or you don't have permission to access this chat")));
+           if(user == null){
+               return CompletableFuture.completedFuture(F.Either.Left(forbidden("You are not logged in")));
+           }
+            if(chatRoomService.findById(roomId, CollectionNames.CHANNEL,ChatRoom.class) == null){
+                return CompletableFuture.completedFuture(F.Either.Left(forbidden("Cannot find any channel with this id : " + roomId)));
+            }
+           if(!ServiceUtil.hasAccess(chatRoomService,roomId,user)){
+               return CompletableFuture.completedFuture(F.Either.Left(forbidden("You don't have access in this room")));
            }
           return CompletableFuture.completedFuture(
                   F.Either.Right(ActorFlow.actorRef(out -> ChatActor.props(out,roomId,user),actorSystem,materializer))

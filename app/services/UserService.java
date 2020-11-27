@@ -3,7 +3,8 @@ package services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import static com.mongodb.client.model.Filters.*;
-import exceptions.NotFoundException;
+
+import constants.CollectionNames;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
 import models.Role;
@@ -43,7 +44,7 @@ public class UserService extends BaseService<User> implements UserRepository {
               user.setRoles(userRoles);
 
           });
-           saveAll(users,"User",User.class);
+           saveAll(users,CollectionNames.USER,User.class);
            return Json.newObject();
        },ec.current());
     }
@@ -56,7 +57,7 @@ public class UserService extends BaseService<User> implements UserRepository {
                 if(Strings.isNullOrEmpty(username)){
                     throw new RequestException(Http.Status.BAD_REQUEST,"Email cannot be empty!");
                 }
-                User foundUser = getCollection("User",User.class).find(eq("username",username)).first();
+                User foundUser = getCollection(CollectionNames.USER,User.class).find(eq("username",username)).first();
                 if(foundUser == null){
                     throw new RequestException(Http.Status.BAD_REQUEST,"Cannot find any user with this email : " + username);
                }
@@ -71,7 +72,7 @@ public class UserService extends BaseService<User> implements UserRepository {
 
     public List<Role> getRoles(User user,List<Role> roleList){
         List<ObjectId> roleIds =  user.getRoleIds().stream().map(ObjectId::new).collect(Collectors.toList());
-        return roleList.stream().reduce(new ArrayList<Role>(),(accumulator,next)->{
+        return roleList.stream().reduce(new ArrayList<>(),(accumulator,next)->{
             roleIds.forEach(id -> {
                if(next.getId().equals(id)){
                    accumulator.add(next);

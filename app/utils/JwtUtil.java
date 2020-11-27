@@ -2,14 +2,10 @@ package utils;
 
 import constants.JwtConstants;
 import exceptions.RequestException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import models.User;
 import play.mvc.Http;
-
 import java.util.Date;
 import java.util.concurrent.CompletionException;
 
@@ -33,11 +29,11 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
             if(claims.isEmpty()){
-                throw new RequestException(Http.Status.UNAUTHORIZED,"Your session has been expired please login again");
+                throw new RequestException(Http.Status.UNAUTHORIZED,"Token is invalid");
             }
             return claims;
-        }catch (SignatureException e){
-            throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"JWT token does not match locally computed signature.JWT token is not valid"));
+        }catch (ExpiredJwtException e){
+            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED,"JWT token has been expired"));
         }catch (RequestException e){
             throw new CompletionException(e);
         }catch (Exception e){
