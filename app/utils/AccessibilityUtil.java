@@ -3,6 +3,7 @@ package utils;
 import com.google.common.base.Strings;
 import exceptions.RequestException;
 import models.BaseModel;
+import models.ChatRoom;
 import models.User;
 import mongo.IMongoDB;
 import org.bson.types.ObjectId;
@@ -59,4 +60,20 @@ public class AccessibilityUtil {
         }
     }
 
+
+    public boolean isGroupAdmin(User user,String roomId){
+        try{
+            if(Strings.isNullOrEmpty(roomId) || user == null){
+                throw new RequestException(Http.Status.BAD_REQUEST,"Either user or roomId was null.Please try again!");
+            }
+            ChatRoom chatRoom = mongoDB.getMongoDatabase().getCollection("Channels",ChatRoom.class)
+                    .find(and(eq("_id",new ObjectId(roomId)),eq("groupAdmin",user.getId())))
+                    .first();
+            return chatRoom != null;
+        }catch (RequestException e){
+            throw new CompletionException(e);
+        }catch (Exception e){
+            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
+        }
+    }
 }

@@ -24,8 +24,8 @@ public class Dashboard extends BaseModel{
     @JsonSerialize(using = MongoDateConverter.class)
     private Date createdAt;
 
-    private List<String> readACL;
-    private List<String> writeACL;
+    private List<String> readACL = Collections.emptyList();
+    private List<String> writeACL = Collections.emptyList();
 
     List<Dashboard> children;
 

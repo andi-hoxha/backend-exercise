@@ -4,10 +4,13 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
 import exceptions.NotFoundException;
 import exceptions.RequestException;
 import mongo.IMongoDB;
 import org.bson.BsonValue;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
 import repositories.BaseRepository;
@@ -52,7 +55,8 @@ public class BaseService<T> implements BaseRepository<T> {
             if(t == null){
                 throw new IllegalArgumentException("Object cannot be empty");
             }
-           T updated = getCollection(collectionName,tClass).findOneAndReplace(eq("_id",new ObjectId(id)),t);
+            FindOneAndReplaceOptions option = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER);
+            T updated = getCollection(collectionName,tClass).findOneAndReplace(eq("_id",new ObjectId(id)),t,option);
             if(updated == null){
                 throw new NotFoundException("No records has been found or updated!");
             }
@@ -119,6 +123,15 @@ public class BaseService<T> implements BaseRepository<T> {
 
     public MongoCollection<T> getCollection(String collectionName,Class<T> tClass){
         return mongoDB.getMongoDatabase().getCollection(collectionName,tClass);
+    }
+
+    @Override
+    public T findOne(String collectionName, Bson filters,Class<T> objectClass){
+        return getCollection(collectionName,objectClass).find(filters).first();
+    }
+    @Override
+    public List<T> findMany(String collectionName,Bson filters, Class<T> objectClass){
+        return getCollection(collectionName,objectClass).find(filters).into(new ArrayList<>());
     }
 
 }

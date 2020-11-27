@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
+import types.UserRole;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -17,17 +18,20 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class User extends BaseModel {
     @NotEmpty
-    String username;
+    private String username;
     @NotEmpty
-    String password;
+    @JsonIgnore
+    private String password;
     @Email(message = "Email should be valid")
-    String email;
+    private String email;
 
     @BsonIgnore
     @JsonIgnore
     @JsonProperty("roleIds")
-    List<String> roleIds;
+    private List<String> roleIds;
 
-    List<Role> roles;
+    private List<Role> roles;
+
+    private String accessToken = UserRole.EMPTY.name();
 
 }

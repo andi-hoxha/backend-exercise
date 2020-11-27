@@ -1,12 +1,14 @@
 package services;
 
 import static com.mongodb.client.model.Filters.*;
+
 import exceptions.RequestException;
 import lombok.extern.slf4j.Slf4j;
 import models.Dashboard;
 import models.Role;
 import models.User;
 import models.content.BaseContent;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
 import types.UserACL;
@@ -30,25 +32,28 @@ public class ContentService extends BaseService<BaseContent> {
 
     public CompletableFuture<List<BaseContent>> getAll(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
-            List<BaseContent> publicContents = publicContents(dashboardId);
-            List<BaseContent> privateContents = privateContents(dashboardId,user);
-
-            publicContents.addAll(privateContents);// merge two lists
-            if (publicContents.isEmpty()) {
+            List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+            rolesAndUserId.add(user.getId().toHexString());
+            Bson filter = or(
+                    (and(eq("dashboardId", new ObjectId(dashboardId)),(and(size("readACL", 0), size("writeACL", 0))))),
+                    (and(eq("dashboardId", new ObjectId(dashboardId)),
+                            or(in("readACL", rolesAndUserId),in("writeACL", rolesAndUserId))))
+                            );
+            List<BaseContent> contents = findMany("Content",filter,BaseContent.class);
+            if(contents == null){
                 return new ArrayList<>();
             }
-            return publicContents.stream().distinct().collect(Collectors.toList()); // return List of all dashboards that user has access
+            return contents;
         });
     }
 
-    public CompletableFuture<BaseContent> create(User user, BaseContent content, String dashboardId) {
+    public CompletableFuture<BaseContent> createContent(User user, BaseContent content, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (!ObjectId.isValid(dashboardId)) {
                     throw new RequestException(Http.Status.BAD_REQUEST, "Dashboard id is not a valid id");
                 }
-                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class, UserACL.READ) ||
-                    !accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
+                if (!accessibilityUtil.withACL(user, dashboardId, "Dashboard", Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to read or write content in this dashboard: " + dashboardId);
                 }
                 content.setWriteACL(Arrays.asList(user.getId().toHexString()));
@@ -63,7 +68,7 @@ public class ContentService extends BaseService<BaseContent> {
         });
     }
 
-    public CompletableFuture<BaseContent> update(BaseContent content,String contentId, User user) {
+    public CompletableFuture<BaseContent> updateContent(BaseContent content,String contentId, User user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (!accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
@@ -78,7 +83,7 @@ public class ContentService extends BaseService<BaseContent> {
         });
     }
 
-    public CompletableFuture<BaseContent> delete(User user,String contentId) {
+    public CompletableFuture<BaseContent> deleteContent(User user,String contentId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (!accessibilityUtil.withACL(user, contentId, "Content", BaseContent.class,UserACL.WRITE)) {
@@ -96,7 +101,8 @@ public class ContentService extends BaseService<BaseContent> {
     public CompletableFuture<BaseContent> getContentById(User user, String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!accessibilityUtil.withACL(user, id, "Content", BaseContent.class,UserACL.READ)) {
+                if (!accessibilityUtil.withACL(user, id, "Content", BaseContent.class,UserACL.READ) &&
+                    !accessibilityUtil.withACL(user,id,"Content",BaseContent.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to view this dashboard");
                 }
                 return findById(id, "Content", BaseContent.class);
@@ -107,7 +113,6 @@ public class ContentService extends BaseService<BaseContent> {
             }
         });
     }
-
 
     private List<BaseContent> publicContents(String dashboardId){
         return getCollection("Content", BaseContent.class)

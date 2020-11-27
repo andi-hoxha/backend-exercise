@@ -47,10 +47,10 @@ public class ContentController extends Controller {
                 .exceptionally(DatabaseUtil::throwableToResult);
     }
 
-    public CompletableFuture<Result> createContent(Http.Request request, String id){
+    public CompletableFuture<Result> createContent(Http.Request request, String dashboardId){
         User user = request.attrs().get(Authorize.Attrs.USER);
         return serializationService.parseBodyOfType(request, BaseContent.class)
-                .thenCompose(res -> contentService.create(user,res,id))
+                .thenCompose(res -> contentService.createContent(user,res,dashboardId))
                 .thenCompose(data -> serializationService.toJsonNode(data))
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);
@@ -59,7 +59,7 @@ public class ContentController extends Controller {
     public CompletableFuture<Result> updateContent(Http.Request request,String dashboardId,String contentId){
         User user = request.attrs().get(Authorize.Attrs.USER);
         return serializationService.parseBodyOfType(request,BaseContent.class)
-                .thenCompose(data -> contentService.update(data,dashboardId,contentId,user))
+                .thenCompose(data -> contentService.updateContent(data,contentId,user))
                 .thenCompose(res -> serializationService.toJsonNode(res))
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);
@@ -67,7 +67,7 @@ public class ContentController extends Controller {
 
     public CompletableFuture<Result> deleteContent(Http.Request request,String dashboardId,String contentId){
         User user = request.attrs().get(Authorize.Attrs.USER);
-        return contentService.delete(user,dashboardId,contentId)
+        return contentService.deleteContent(user,contentId)
                 .thenCompose(res -> serializationService.toJsonNode(res))
                 .thenApply(Results::ok)
                 .exceptionally(DatabaseUtil::throwableToResult);

@@ -1,6 +1,7 @@
 package services;
 
 import com.google.common.base.Strings;
+import com.mongodb.client.model.Updates;
 import exceptions.RequestException;
 import models.User;
 import play.mvc.Http;
@@ -12,6 +13,7 @@ import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static com.mongodb.client.model.Filters.*;
 @Singleton
 public class AuthService {
 
@@ -26,10 +28,13 @@ public class AuthService {
                 }
                 User foundUser = userService.findByUser(username).join();
                 String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
-                if(!encodedPassword.equalsIgnoreCase(foundUser.getPassword())){
-                    throw new RuntimeException("Incorrect password");
+                if(!encodedPassword.equalsIgnoreCase(foundUser.getPassword()) || !foundUser.getUsername().equalsIgnoreCase(username)){
+                    throw new RuntimeException("Either username or password is incorrect");
                 }
-                return JwtUtil.getAccessToken(foundUser);
+                String accessToken = JwtUtil.getAccessToken(foundUser);
+                foundUser.setAccessToken(accessToken);
+                userService.getCollection("User",User.class).updateOne(eq("_id",foundUser.getId()), Updates.set("accessToken",accessToken));
+                return accessToken;
             }catch (IllegalArgumentException e){
                 throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Either your login username or password is empty"));
             }catch (RuntimeException e){

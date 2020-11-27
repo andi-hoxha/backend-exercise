@@ -5,20 +5,25 @@ version := "1.0.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
+PlayKeys.devSettings += "config.resource" -> "development.conf"
+
+//fork in Test := true
+//javaOptions in Test ++= Seq("-Dconfig.file=conf/test.conf", "-Dlogger.resource=test.logback.xml")
+
 val akkaManagementVersion = "1.0.0"
-val akkaVersion = "2.6.0"
-val akkaHTTPVersion = "10.1.10"
+val akkaVersion = "2.6.8"
+val akkaHTTPVersion = "10.1.12"
+
+sources in (Compile, doc) := Seq.empty
+publishArtifact in (Compile, packageDoc) := false
 
 routesGenerator := InjectedRoutesGenerator
-
-PlayKeys.devSettings +="config.resource" -> "development.conf"
 
 scalaVersion := "2.12.9"
 
 libraryDependencies ++= Seq(
   javaWs,
   guice,
-  ehcache,
   filters,
   "org.hibernate.validator" % "hibernate-validator" % "6.1.6.Final",
   "junit" % "junit" % "4.12",
@@ -27,6 +32,8 @@ libraryDependencies ++= Seq(
   "io.jsonwebtoken" % "jjwt" % "0.9.1",
   "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.2.0",
   "org.glassfish" % "javax.el" % "3.0.0",
+  "com.typesafe.play" %% "play-mailer" % "6.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
 
 //  Akka
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -39,6 +46,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
   "com.typesafe.akka" %% "akka-serialization-jackson" % akkaVersion,
+  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
   // akka cluster related stuff
   "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % akkaManagementVersion,
   "com.lightbend.akka.management" %% "akka-management" % akkaManagementVersion,

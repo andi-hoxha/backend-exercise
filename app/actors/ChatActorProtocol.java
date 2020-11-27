@@ -12,4 +12,5 @@ public class ChatActorProtocol {
     public static class ChatMessage implements ActorMessage{
         private String message;
     }
+
 }
