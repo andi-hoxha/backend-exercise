@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import static com.mongodb.client.model.Filters.*;
 import exceptions.NotFoundException;
 import exceptions.RequestException;
+import executors.MongoExecutionContext;
 import models.Role;
 import models.User;
 import org.bson.types.ObjectId;
@@ -28,6 +29,9 @@ public class UserService extends BaseService<User> implements UserRepository {
     @Inject
     RoleService roleService;
 
+    @Inject
+    MongoExecutionContext ec;
+
     public CompletableFuture<JsonNode> setup(List<User> users){
        return CompletableFuture.supplyAsync(()->{
            List<Role> roles = roleService.getAll("Role",Role.class);
@@ -41,7 +45,7 @@ public class UserService extends BaseService<User> implements UserRepository {
           });
            saveAll(users,"User",User.class);
            return Json.newObject();
-       });
+       },ec.current());
     }
 
 
@@ -50,19 +54,19 @@ public class UserService extends BaseService<User> implements UserRepository {
        return CompletableFuture.supplyAsync(()->{
            try{
                 if(Strings.isNullOrEmpty(username)){
-                    throw new IllegalArgumentException("Email cannot be empty!");
+                    throw new RequestException(Http.Status.BAD_REQUEST,"Email cannot be empty!");
                 }
                 User foundUser = getCollection("User",User.class).find(eq("username",username)).first();
                 if(foundUser == null){
-                    throw new NotFoundException("Cannot find any user with this email : " + username);
+                    throw new RequestException(Http.Status.BAD_REQUEST,"Cannot find any user with this email : " + username);
                }
                 return foundUser;
-           }catch (IllegalArgumentException e){
-               throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"Email cannot be empty"));
-           }catch (NotFoundException e){
-               throw new CompletionException(new RequestException(Http.Status.NOT_FOUND,"Cannot find any user with this email: " + username));
+           }catch (RequestException e){
+               throw new CompletionException(e);
+           }catch (Exception e){
+               throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Cannot find any user with this email: " + username));
            }
-       });
+       },ec.current());
     }
 
     public List<Role> getRoles(User user,List<Role> roleList){

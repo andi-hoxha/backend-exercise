@@ -1,7 +1,9 @@
 package services;
 
 import actions.Authorized;
+import com.google.common.base.Strings;
 import exceptions.RequestException;
+import executors.MongoExecutionContext;
 import models.ChatRoom;
 import models.User;
 import org.bson.types.ObjectId;
@@ -24,26 +26,45 @@ public class ChatRoomService extends BaseService<ChatRoom> {
     @Inject
     AccessibilityUtil accessibilityUtil;
 
+    @Inject
+    MongoExecutionContext ec;
+
     public CompletableFuture<List<ChatRoom>> allChannels(User user){
         return CompletableFuture.supplyAsync(() -> {
-            List<ChatRoom> publicChannels = publicChannels();
-            List<ChatRoom> privateChannels = privateChannels(user);
-            publicChannels.addAll(privateChannels);
-            return publicChannels;
-        });
+            try {
+                if(user == null){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be null");
+                }
+                List<ChatRoom> publicChannels = publicChannels();
+                List<ChatRoom> privateChannels = privateChannels(user);
+                publicChannels.addAll(privateChannels);
+                return publicChannels;
+            }catch (RequestException e){
+                throw new CompletionException(e);
+            }
+        },ec.current());
     }
 
     public CompletableFuture<ChatRoom> createChannel(User user,ChatRoom chatRoom){
         return CompletableFuture.supplyAsync(() -> {
+            try {
+                if(user == null || chatRoom == null){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be null");
+                }
                 chatRoom.setGroupAdmin(user.getId());
-                if(chatRoom.getChannelType().name().equals("PRIVATE")){
-                  List<String> writeACL = new ArrayList<>();
-                  writeACL.add(user.getId().toHexString());
-                  writeACL.addAll(chatRoom.getGroupMembers());
-                  chatRoom.setWriteACL(writeACL);
+                if (chatRoom.getChannelType().name().equals("PRIVATE")) {
+                    List<String> writeACL = new ArrayList<>();
+                    writeACL.add(user.getId().toHexString());
+                    writeACL.addAll(chatRoom.getGroupMembers());
+                    chatRoom.setWriteACL(writeACL);
                 }
                 return save(chatRoom, "Channels", ChatRoom.class);
-        });
+            }catch (RequestException e){
+                throw new CompletionException(e);
+            }catch (Exception e){
+                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
+            }
+        },ec.current());
     }
 
     public CompletableFuture<ChatRoom> updateChannel(User user,String roomId,ChatRoom chatRoom){
@@ -58,7 +79,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
             }catch (Exception e){
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<ChatRoom> deleteChannel (User user,String roomId){
@@ -73,7 +94,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
             }catch (Exception e){
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<ChatRoom> findById(User user,String roomId){
@@ -88,7 +109,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
            }catch (Exception e){
                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
            }
-       });
+       },ec.current());
     }
 
     public CompletableFuture<Void> leaveTheChannel(User user,String roomId){
@@ -96,7 +117,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
             ChatRoom chatRoom = findById(user,roomId).join();
             chatRoom.getGroupMembers().remove(user);
             return null;
-        });
+        },ec.current());
     }
 
     public CompletableFuture<Void> inviteUsers(List<String> list, String roomId, User user){
@@ -114,7 +135,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
             }catch (Exception e){
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     private List<ChatRoom> publicChannels(){

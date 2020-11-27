@@ -3,6 +3,7 @@ package services;
 import static com.mongodb.client.model.Filters.*;
 
 import exceptions.RequestException;
+import executors.MongoExecutionContext;
 import models.Dashboard;
 import models.Role;
 import models.User;
@@ -27,24 +28,41 @@ public class DashboardService extends BaseService<Dashboard> {
     @Inject
     AccessibilityUtil accessibilityUtil;
 
+    @Inject
+    MongoExecutionContext ec;
+
     public CompletableFuture<List<Dashboard>> getAll(User user) {
         return CompletableFuture.supplyAsync(() -> {
-            List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-            rolesAndUserId.add(user.getId().toHexString());
-            Bson filter = or(
-                    (and(size("readACL", 0), size("writeACL", 0))),
-                    (or(in("readACL", rolesAndUserId), in("writeACL", rolesAndUserId)))
-            );
-            return findMany("Dashboard", filter, Dashboard.class);
-        });
+            try {
+                if(user == null){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be null");
+                }
+                List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+                rolesAndUserId.add(user.getId().toHexString());
+                Bson filter = or(
+                        (and(size("readACL", 0), size("writeACL", 0))),
+                        (or(in("readACL", rolesAndUserId), in("writeACL", rolesAndUserId)))
+                );
+                return findMany("Dashboard", filter, Dashboard.class);
+            }catch (RequestException e){
+                throw new CompletionException(e);
+            }
+        },ec.current());
     }
 
     public CompletableFuture<Dashboard> create(User user, Dashboard dashboard) {
         return CompletableFuture.supplyAsync(() -> {
-            dashboard.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-            dashboard.getWriteACL().add(user.getId().toHexString());
-            return save(dashboard, "Dashboard", Dashboard.class);
-        });
+            try {
+                if(user == null || dashboard == null){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"Either user or dashboard cannot be null");
+                }
+                dashboard.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                dashboard.getWriteACL().add(user.getId().toHexString());
+                return save(dashboard, "Dashboard", Dashboard.class);
+            }catch (RequestException e){
+                throw new CompletionException(e);
+            }
+        },ec.current());
     }
 
 
@@ -60,7 +78,7 @@ public class DashboardService extends BaseService<Dashboard> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<Dashboard> delete(User user, String dashboardId) {
@@ -75,7 +93,7 @@ public class DashboardService extends BaseService<Dashboard> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<Dashboard> getDashboardById(User user, String id) {
@@ -91,7 +109,7 @@ public class DashboardService extends BaseService<Dashboard> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
 
     }
 

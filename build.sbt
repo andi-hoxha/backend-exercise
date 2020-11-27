@@ -7,8 +7,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 PlayKeys.devSettings += "config.resource" -> "development.conf"
 
-//fork in Test := true
-//javaOptions in Test ++= Seq("-Dconfig.file=conf/test.conf", "-Dlogger.resource=test.logback.xml")
+fork in Test := true
+javaOptions in Test ++= Seq("-Dconfig.file=conf/test.conf", "-Dlogger.resource=test.logback.xml")
 
 val akkaManagementVersion = "1.0.0"
 val akkaVersion = "2.6.8"
@@ -24,6 +24,7 @@ scalaVersion := "2.12.9"
 libraryDependencies ++= Seq(
   javaWs,
   guice,
+  ehcache,
   filters,
   "org.hibernate.validator" % "hibernate-validator" % "6.1.6.Final",
   "junit" % "junit" % "4.12",

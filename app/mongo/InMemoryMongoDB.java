@@ -20,48 +20,56 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 public final class InMemoryMongoDB  extends MongoDriver{
-    private  static MongodExecutable mongoEx;
+    private static MongodExecutable mongoEx;
 
-    @Inject InMemoryMongoDB(CoordinatedShutdown coordinatedShutdown, Config config){
-        super(config,coordinatedShutdown);
+    @Inject
+    public InMemoryMongoDB(CoordinatedShutdown coordinatedShutdown, Config config) {
+        super(config, coordinatedShutdown);
+
+        this.init();
     }
 
-
-    @Override
-    protected MongoDatabase connect() {
-        IRuntimeConfig builder = new RuntimeConfigBuilder().defaults(Command.MongoD)
-                .processOutput(ProcessOutput.getDefaultInstanceSilent())
-                .build();
-        MongodStarter starter = MongodStarter.getInstance(builder);
-        try{
+    private void init() {
+        if (mongoEx != null) {
+            return;
+        }
+        try {
+            IRuntimeConfig builder = new RuntimeConfigBuilder()
+                    .defaults(Command.MongoD)
+                    .processOutput(ProcessOutput.getDefaultInstanceSilent())
+                    .build();
+            MongodStarter starter = MongodStarter.getInstance(builder);
             mongoEx = starter.prepare(new MongodConfigBuilder()
-            .version(Version.Main.PRODUCTION)
-            .net(new Net("localhost",12345, Network.localhostIsIPv6()))
-            .build());
+                    .version(Version.Main.PRODUCTION)
+                    .net(new Net("localhost", 12345, Network.localhostIsIPv6()))
+                    .build());
             mongoEx.start();
-            client = MongoClients.create("mongodb://localhost:27017");
-            return client.getDatabase("test");
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
     @Override
-    protected void disconnect() {
+    public MongoDatabase connect() {
+        client = MongoClients.create("mongodb://localhost:27017");
+        return client.getDatabase("test");
+    }
+
+    @Override
+    public void disconnect() {
         closeMongoClient();
         closeMongoProcess();
     }
 
-    private void closeMongoProcess(){
-        if(mongoEx == null){
-            return ;
+    private void closeMongoProcess() {
+        if (mongoEx == null) {
+            return;
         }
-        client.close();
+        mongoEx.stop();
     }
 
-    private void closeMongoClient(){
-        if(client == null){
+    private void closeMongoClient() {
+        if (client == null) {
             return;
         }
         client.close();

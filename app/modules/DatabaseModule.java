@@ -2,7 +2,10 @@ package modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.typesafe.config.Config;
+import models.User;
 import mongo.IMongoDB;
 import mongo.InMemoryMongoDB;
 import mongo.MongoDB;

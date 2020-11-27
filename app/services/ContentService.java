@@ -2,7 +2,9 @@ package services;
 
 import static com.mongodb.client.model.Filters.*;
 
+import com.google.common.base.Strings;
 import exceptions.RequestException;
+import executors.MongoExecutionContext;
 import lombok.extern.slf4j.Slf4j;
 import models.Dashboard;
 import models.Role;
@@ -30,21 +32,33 @@ public class ContentService extends BaseService<BaseContent> {
     @Inject
     AccessibilityUtil accessibilityUtil;
 
+    @Inject
+    MongoExecutionContext ec;
+
     public CompletableFuture<List<BaseContent>> getAll(User user, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
-            List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-            rolesAndUserId.add(user.getId().toHexString());
-            Bson filter = or(
-                    (and(eq("dashboardId", new ObjectId(dashboardId)),(and(size("readACL", 0), size("writeACL", 0))))),
-                    (and(eq("dashboardId", new ObjectId(dashboardId)),
-                            or(in("readACL", rolesAndUserId),in("writeACL", rolesAndUserId))))
-                            );
-            List<BaseContent> contents = findMany("Content",filter,BaseContent.class);
-            if(contents == null){
-                return new ArrayList<>();
+            try {
+                if(user == null || !ObjectId.isValid(dashboardId)){
+                    throw new RequestException(Http.Status.BAD_REQUEST,"Either user or dashboardId is invalid");
+                }
+                List<String> rolesAndUserId = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+                rolesAndUserId.add(user.getId().toHexString());
+                Bson filter = or(
+                        (and(eq("dashboardId", new ObjectId(dashboardId)), (and(size("readACL", 0), size("writeACL", 0))))),
+                        (and(eq("dashboardId", new ObjectId(dashboardId)),
+                                or(in("readACL", rolesAndUserId), in("writeACL", rolesAndUserId))))
+                );
+                List<BaseContent> contents = findMany("Content", filter, BaseContent.class);
+                if (contents == null) {
+                    return new ArrayList<>();
+                }
+                return contents;
+            }catch (RequestException e){
+                throw new CompletionException(e);
+            }catch (Exception e){
+                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
-            return contents;
-        });
+        },ec.current());
     }
 
     public CompletableFuture<BaseContent> createContent(User user, BaseContent content, String dashboardId) {
@@ -65,7 +79,7 @@ public class ContentService extends BaseService<BaseContent> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<BaseContent> updateContent(BaseContent content,String contentId, User user) {
@@ -80,7 +94,7 @@ public class ContentService extends BaseService<BaseContent> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<BaseContent> deleteContent(User user,String contentId) {
@@ -95,7 +109,7 @@ public class ContentService extends BaseService<BaseContent> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     public CompletableFuture<BaseContent> getContentById(User user, String id) {
@@ -111,7 +125,7 @@ public class ContentService extends BaseService<BaseContent> {
             } catch (Exception e) {
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
             }
-        });
+        },ec.current());
     }
 
     private List<BaseContent> publicContents(String dashboardId){

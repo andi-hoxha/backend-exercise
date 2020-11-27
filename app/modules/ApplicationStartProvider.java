@@ -19,9 +19,7 @@ public class ApplicationStartProvider {
 
 
     @Inject
-    public ApplicationStartProvider(Config config, IMongoDB mongoDB,ActorSystem system){
-        IndexOptions indexOptions = new IndexOptions().unique(true);
-        mongoDB.getMongoDatabase().getCollection("User",User.class).createIndex(Indexes.ascending("username","email"),indexOptions);
+    public ApplicationStartProvider(Config config,ActorSystem system){
         String mode = config.getString("mode");
         Logger.of(this.getClass()).debug("RUNNING IN MODE -----> " + mode.toUpperCase());
 

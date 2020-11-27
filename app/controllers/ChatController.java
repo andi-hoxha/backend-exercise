@@ -10,6 +10,7 @@ import models.ChatRoom;
 import models.User;
 import mongo.IMongoDB;
 import play.libs.F;
+import play.libs.concurrent.HttpExecutionContext;
 import play.libs.streams.ActorFlow;
 import play.mvc.*;
 import services.ChatRoomService;

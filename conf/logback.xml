@@ -29,7 +29,10 @@
   <logger name="play.mvc.Action" level="ERROR" />
   <logger name="akka" level="INFO" />
   <logger name="play" level="INFO" />
+  <logger name="controllers" level="DEBUG" />
+  <logger name="services" level="DEBUG" />
   <logger name="app" level="DEBUG" />
+
   <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
   <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
   <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
