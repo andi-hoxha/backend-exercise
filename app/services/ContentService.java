@@ -62,9 +62,6 @@ public class ContentService extends BaseService<BaseContent> {
     public CompletableFuture<BaseContent> createContent(User user, BaseContent content, String dashboardId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (!ObjectId.isValid(dashboardId)) {
-                    throw new RequestException(Http.Status.BAD_REQUEST, "Dashboard id is not a valid id");
-                }
                 if (!accessibilityUtil.withACL(user, dashboardId, CollectionNames.DASHBOARD, Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to read or write content in this dashboard: " + dashboardId);
                 }

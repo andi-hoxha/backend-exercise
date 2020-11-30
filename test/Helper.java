@@ -1,4 +1,3 @@
-import models.User;
 import models.requests.AuthRequestModel;
 import play.Application;
 import play.libs.Json;

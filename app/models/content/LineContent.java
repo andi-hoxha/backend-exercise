@@ -1,7 +1,9 @@
 package models.content;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
 import javax.annotation.Nullable;
@@ -12,6 +14,8 @@ import java.util.List;
 @BsonDiscriminator(key = "type",value = "LINE")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@AllArgsConstructor
+@NoArgsConstructor
 public class LineContent extends BaseContent implements Content{
 
     @Nullable

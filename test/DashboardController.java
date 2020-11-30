@@ -2,6 +2,7 @@ import lombok.Data;
 import models.Dashboard;
 import models.requests.AuthRequestModel;
 import mongo.InMemoryMongoDB;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import play.libs.Json;
@@ -18,6 +19,7 @@ public class DashboardController extends WithApplication {
 
     InMemoryMongoDB mongoDB;
     private String accessToken;
+    private String unatuhorizedUserToken;
 
     @Before
     @Override
@@ -27,6 +29,18 @@ public class DashboardController extends WithApplication {
         AuthRequestModel login = new AuthRequestModel("AndfiOxa","qov12345");
         Result result = Helper.authenticate(app,login);
         this.accessToken = Helper.getAccessToken(result);
+        AuthRequestModel userLogin = new AuthRequestModel("BuleronSejdiu","buleroniG12");
+        Result authResult = Helper.authenticate(app,userLogin);
+        this.unatuhorizedUserToken = Helper.getAccessToken(authResult);
+    }
+
+    @After
+    @Override
+    public void stopPlay(){
+        if(app !=null){
+            Helpers.stop(app);
+            app = null;
+        }
     }
 
     @Test
@@ -58,10 +72,24 @@ public class DashboardController extends WithApplication {
     @Test
     public void updateDashboardWithoutWriteACL(){
         Dashboard dashboard = new Dashboard();
-        dashboard.setName("Test");
+        dashboard.setName("Fake Dashboard");
         dashboard.setDescription("Fake");
-        final Http.RequestBuilder request = new Http.RequestBuilder().method("PUT").uri("/api/dashboard/5fc11dc802eeb60c76f0564d").header("Authorization","Bearer ").bodyJson(Json.toJson(dashboard));
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("PUT").uri("/api/dashboard/5fc3c3698136fa7ded94943a").header("Authorization","Bearer " + unatuhorizedUserToken).bodyJson(Json.toJson(dashboard));
         final Result result = Helpers.route(app,request);
         assertEquals(unauthorized().status(),result.status());
+    }
+
+    @Test
+    public void deleteDashboardWithBadRequest(){
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("DELETE").uri("/api/dashboard/someId").header("Authorization","Bearer " + accessToken);
+        final Result result = Helpers.route(app,request);
+        assertEquals(badRequest().status(),result.status());
+    }
+
+    @Test
+    public void deleteDashboard(){
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("DELETE").uri("/api/dashboard/5fc414feea83860922998d6c").header("Authorization","Bearer " + accessToken);
+        final Result result = Helpers.route(app,request);
+        assertEquals(ok().status(),result.status());
     }
 }

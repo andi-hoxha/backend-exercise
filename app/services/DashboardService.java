@@ -84,13 +84,16 @@ public class DashboardService extends BaseService<Dashboard> {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (!accessibilityUtil.withACL(user, dashboardId, CollectionNames.DASHBOARD, Dashboard.class, UserACL.WRITE)) {
-                    throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this dashboard");
+                    throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this dashboard or there isn't any dashboard with this id");
                 }
-                return delete(dashboardId, CollectionNames.DASHBOARD, Dashboard.class);
+//                return delete(dashboardId, CollectionNames.DASHBOARD, Dashboard.class);
+                return new Dashboard();
             } catch (RequestException e) {
                 throw new CompletionException(e);
-            } catch (Exception e) {
-                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR, "Service unavailable"));
+            } catch (CompletionException e) {
+               throw e;
+            }catch (Exception e){
+                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
         },ec.current());
     }
