@@ -40,5 +40,4 @@ public class JwtUtil {
             throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Authentication service unavailable"));
         }
     }
-
 }

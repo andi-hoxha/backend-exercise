@@ -45,8 +45,10 @@ public class AuthService {
                 foundUser.setAccessToken(accessToken);
                 userService.getCollection(CollectionNames.USER,User.class).updateOne(eq("_id",foundUser.getId()), Updates.set("accessToken",accessToken));
                 return accessToken;
-            }catch (RequestException e){
+            }catch (RequestException e) {
                 throw new CompletionException(e);
+            }catch (CompletionException e){
+                throw e;
             }catch (Exception e){
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"service unavailable"));
             }

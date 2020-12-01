@@ -4,6 +4,8 @@ import models.content.ImageContent;
 import models.content.TextContent;
 import models.requests.AuthRequestModel;
 import mongo.InMemoryMongoDB;
+import org.bson.types.ObjectId;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import play.libs.Json;
@@ -34,6 +36,15 @@ public class ContentController extends WithApplication {
         this.unatuhorizedUserToken = Helper.getAccessToken(authResult);
     }
 
+    @After
+    @Override
+    public void stopPlay(){
+        if(app !=null){
+            Helpers.stop(app);
+            app = null;
+        }
+    }
+
     @Test
     public void createContent(){
         BaseContent baseContent = new EmailContent("Hi there","Test info","andih576@gmail.com");
@@ -58,4 +69,43 @@ public class ContentController extends WithApplication {
         assertEquals(ok().status(),result.status());
     }
 
+    @Test
+    public void updateNonExistingContent(){
+        BaseContent baseContent = new ImageContent("https://imgs.6sqft.com/wp-content/uploads/2020/06/26105451/NYC-sunset-Lower-Manhattan.jpg");
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("PUT").uri("/api/dashboard/5fc3c3698136fa7ded94943a/content/someId").header("Authorization","Bearer " + accessToken).bodyJson(Json.toJson(baseContent));
+        final Result result = Helpers.route(app,request);
+        assertEquals(badRequest().status(),result.status());
+    }
+
+    @Test
+    public void updateNonAuthorizedContent(){
+        BaseContent baseContent = new ImageContent("https://imgs.6sqft.com/wp-content/uploads/2020/06/26105451/NYC-sunset-Lower-Manhattan.jpg");
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("PUT").uri("/api/dashboard/5fc3c3698136fa7ded94943a/content/5fc4b619ca2f150e05a9fdf6").header("Authorization","Bearer " + unatuhorizedUserToken).bodyJson(Json.toJson(baseContent));
+        final Result result = Helpers.route(app,request);
+        assertEquals(unauthorized().status(),result.status());
+    }
+
+    @Test
+    public void updateContent(){
+        BaseContent baseContent = new ImageContent("https://imgs.6sqft.com/wp-content/uploads/2020/06/26105451/NYC-sunset-Lower-Manhattan.jpg");
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("PUT").uri("/api/dashboard/5fc3c3698136fa7ded94943a/content/5fc4bf01c7715923896908b1").header("Authorization","Bearer " + accessToken).bodyJson(Json.toJson(baseContent));
+        final Result result = Helpers.route(app,request);
+        assertEquals(ok().status(),result.status());
+    }
+
+    @Test
+    public void createContent2(){
+        BaseContent baseContent = new EmailContent("Hi there","Test info","andih576@gmail.com");
+        baseContent.setId(new ObjectId("5fc4bf52d7c8332499e84c2a"));
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("POST").uri("/api/dashboard/5fc3c3698136fa7ded94943a/content").header("Authorization","Bearer " + accessToken).bodyJson(Json.toJson(baseContent));
+        final Result result = Helpers.route(app,request);
+        assertEquals(ok().status(),result.status());
+    }
+
+    @Test
+    public void deleteContent(){
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("DELETE").uri("/api/dashboard/5fc3c3698136fa7ded94943a/content/5fc4bf52d7c8332499e84c2a").header("Authorization","Bearer " + accessToken);
+        final Result result = Helpers.route(app,request);
+        assertEquals(ok().status(),result.status());
+    }
 }

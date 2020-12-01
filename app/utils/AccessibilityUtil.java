@@ -13,7 +13,6 @@ import types.UserACL;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.*;
@@ -24,7 +23,7 @@ public class AccessibilityUtil {
     @Inject
     private IMongoDB mongoDB;
 
-    public <T> boolean withACL(User user, String resourceId, String collectionName, Class<T> objectClass, UserACL userACL){
+    public <T> boolean withACL(User user, String resourceId, String collectionName, Class<T> objectClass, UserACL userACL) throws RequestException {
         try{
             parametersCheck(user,resourceId,collectionName,objectClass);
             List<String> roles = user.getRoles().stream().map(BaseModel::getId).map(ObjectId::toHexString).collect(Collectors.toList());
@@ -44,7 +43,9 @@ public class AccessibilityUtil {
             }
                 return resource != null;
         }catch (RequestException e){
-            throw new CompletionException(e);
+            throw e;
+        }catch (Exception e){
+            throw new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable");
         }
     }
 
@@ -61,7 +62,7 @@ public class AccessibilityUtil {
     }
 
 
-    public boolean isGroupAdmin(User user,String roomId){
+    public boolean isGroupAdmin(User user,String roomId) throws RequestException {
         try{
             if(Strings.isNullOrEmpty(roomId) || user == null){
                 throw new RequestException(Http.Status.BAD_REQUEST,"Either user or roomId was null.Please try again!");
@@ -71,9 +72,9 @@ public class AccessibilityUtil {
                     .first();
             return chatRoom != null;
         }catch (RequestException e){
-            throw new CompletionException(e);
+            throw e;
         }catch (Exception e){
-            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
+            throw new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable");
         }
     }
 }
