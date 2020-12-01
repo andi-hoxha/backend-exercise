@@ -53,7 +53,7 @@ public class DashboardService extends BaseService<Dashboard> {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if(user == null || dashboard == null){
-                    throw new RequestException(Http.Status.BAD_REQUEST,"Either user or dashboard cannot be null");
+                    throw new RequestException(Http.Status.BAD_REQUEST,"Either user or dashboard is empty");
                 }
                 dashboard.setCreatedAt(new Timestamp(System.currentTimeMillis()));
                 dashboard.getWriteACL().add(user.getId().toHexString());
@@ -86,8 +86,7 @@ public class DashboardService extends BaseService<Dashboard> {
                 if (!accessibilityUtil.withACL(user, dashboardId, CollectionNames.DASHBOARD, Dashboard.class, UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to delete this dashboard or there isn't any dashboard with this id");
                 }
-//                return delete(dashboardId, CollectionNames.DASHBOARD, Dashboard.class);
-                return new Dashboard();
+                return delete(dashboardId, CollectionNames.DASHBOARD, Dashboard.class);
             } catch (RequestException e) {
                 throw new CompletionException(e);
             } catch (Exception e){

@@ -74,7 +74,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
                 if (!accessibilityUtil.withACL(user, roomId, CollectionNames.CHANNEL, ChatRoom.class, UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED,"You are not authorized to edit this channel");
                 }
-                return update(chatRoom,roomId,"Channels",ChatRoom.class);
+                return update(chatRoom,roomId,CollectionNames.CHANNEL,ChatRoom.class);
             }catch (RequestException e){
                 throw new CompletionException(e);
             }catch (Exception e){
@@ -102,9 +102,9 @@ public class ChatRoomService extends BaseService<ChatRoom> {
        return CompletableFuture.supplyAsync(() ->{
            try{
                if(!accessibilityUtil.withACL(user,roomId, CollectionNames.CHANNEL,ChatRoom.class,UserACL.WRITE)){
-                   throw new RequestException(Http.Status.UNAUTHORIZED,"There is no grupchat with this Id or it's a private group in which you don't have accesss");
+                   throw new RequestException(Http.Status.UNAUTHORIZED,"There is no channel with this Id or it's a private group in which you don't have access");
                }
-               return findById(roomId,"Channels",ChatRoom.class);
+               return findById(roomId,CollectionNames.CHANNEL,ChatRoom.class);
            }catch (RequestException e){
                throw new CompletionException(e);
            }catch (Exception e){

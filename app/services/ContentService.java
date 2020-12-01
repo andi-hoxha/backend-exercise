@@ -19,7 +19,6 @@ import utils.ServiceUtil;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -65,7 +64,7 @@ public class ContentService extends BaseService<BaseContent> {
                 if (!accessibilityUtil.withACL(user, dashboardId, CollectionNames.DASHBOARD, Dashboard.class,UserACL.WRITE)) {
                     throw new RequestException(Http.Status.UNAUTHORIZED, user.getUsername() + " does not have access to read or write content in this dashboard: " + dashboardId);
                 }
-                content.setWriteACL(Collections.singletonList(user.getId().toHexString()));
+                content.getWriteACL().add(user.getId().toHexString());
                 content.setDashboardId(new ObjectId(dashboardId));
 
                 return save(content, CollectionNames.CONTENT, BaseContent.class);
