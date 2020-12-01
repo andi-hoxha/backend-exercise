@@ -35,4 +35,20 @@ public class AuthController extends WithApplication {
         assertEquals(ok().status(),result.status());
     }
 
+    @Test
+    public void unsuccessfulLogin(){
+        AuthRequestModel authRequest = new AuthRequestModel("","");
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("POST").uri("/api/authenticate").bodyJson(Json.toJson(authRequest));
+        final Result result = Helpers.route(app,request);
+        assertEquals(badRequest().status(),result.status());
+    }
+
+    @Test
+    public void unsuccessfulLogin2(){
+        AuthRequestModel authRequest = new AuthRequestModel("test","test");
+        final Http.RequestBuilder request = new Http.RequestBuilder().method("POST").uri("/api/authenticate").bodyJson(Json.toJson(authRequest));
+        final Result result = Helpers.route(app,request);
+        assertEquals(notFound().status(),result.status());
+    }
+
 }
