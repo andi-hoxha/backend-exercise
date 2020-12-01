@@ -35,7 +35,7 @@ public class AuthService {
                 }
                 User foundUser = userService.findOne("User",eq("username",username),User.class);
                 if(foundUser == null){
-                    throw new RequestException(Http.Status.NOT_FOUND,"User is not registered");
+                    throw new RequestException(Http.Status.NOT_FOUND,"Please check your inputs!");
                 }
                 String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
                 if(!encodedPassword.equalsIgnoreCase(foundUser.getPassword()) || !foundUser.getUsername().equalsIgnoreCase(username)){

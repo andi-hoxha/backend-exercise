@@ -90,9 +90,7 @@ public class DashboardService extends BaseService<Dashboard> {
                 return new Dashboard();
             } catch (RequestException e) {
                 throw new CompletionException(e);
-            } catch (CompletionException e) {
-               throw e;
-            }catch (Exception e){
+            } catch (Exception e){
                 throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service unavailable"));
             }
         },ec.current());

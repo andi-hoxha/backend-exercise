@@ -56,7 +56,7 @@ public class SerializationService {
             T object = body.get();
             String errors = HibernateValidator.validate(object);
             if(!Strings.isNullOrEmpty(errors)){
-                throw new RequestException(Http.Status.BAD_REQUEST,"exception while parsing body.Check your body request");
+                throw new RequestException(Http.Status.BAD_REQUEST,"exception while validating request.Check your body request");
             }
             return object;
         }catch (RequestException ex){
@@ -86,7 +86,6 @@ public class SerializationService {
             }
             try{
                 Files.TemporaryFile file = filePart.getRef();
-                file.copyTo(Paths.get("public/files/dummys.json"),true);
                 JsonNode content = this.fileToObjectNode(file);
                 return parseJsonListOfType(content,objectClass);
             }catch (JsonProcessingException e){
