@@ -28,6 +28,7 @@ public class Dashboard extends BaseModel{
     private List<String> readACL = Collections.emptyList();
     private List<String> writeACL = Collections.emptyList();
 
+    @BsonIgnore
     List<Dashboard> children;
 
 }
