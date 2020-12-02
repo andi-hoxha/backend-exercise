@@ -29,7 +29,7 @@ public class Authorize extends Action<Authorized> {
     public CompletionStage<Result> call(Http.Request req){
         Optional<String> header = req.header(JwtConstants.HEADER_KEY);
         if(!header.isPresent() || !header.get().startsWith(JwtConstants.TOKEN_PREFIX)){
-            return CompletableFuture.completedFuture(unauthorized("Either header key or token prefix is missing.You are not authorized,please login again."));
+            return CompletableFuture.completedFuture(unauthorized("Either header key or token prefix is missing.You are not authorized! Please login again."));
         }
         String token = header.get().substring(JwtConstants.TOKEN_PREFIX_INDEX);
         if(Strings.isNullOrEmpty(token)){
@@ -39,7 +39,6 @@ public class Authorize extends Action<Authorized> {
         try{
             claims = JwtUtil.parse(token);
         }catch (ExpiredJwtException e){
-            Logger.of(this.getClass()).debug("Token has been expired : " + token);
             throw new CompletionException(new RequestException(Http.Status.REQUEST_TIMEOUT,"Your token has been expired.Please login again!"));
         }
         String userId = (String) claims.get("userId");

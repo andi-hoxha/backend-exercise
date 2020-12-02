@@ -38,11 +38,7 @@ public class UserService extends BaseService<User> implements UserRepository {
            List<Role> roles = roleService.getAll("Role",Role.class);
           users.forEach(user -> {
               List<Role> userRoles = getRoles(user,roles);
-              String password = user.getPassword();
-              String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
-              user.setPassword(encodedPassword);
               user.setRoles(userRoles);
-
           });
            saveAll(users,CollectionNames.USER,User.class);
            return Json.newObject();
