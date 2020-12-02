@@ -37,8 +37,7 @@ public class AuthService {
                 if(foundUser == null){
                     throw new RequestException(Http.Status.NOT_FOUND,"Cannot find any user with this " + username);
                 }
-                String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
-                if(!encodedPassword.equalsIgnoreCase(foundUser.getPassword()) || !foundUser.getUsername().equalsIgnoreCase(username)){
+                if(!password.equalsIgnoreCase(foundUser.getPassword()) || !foundUser.getUsername().equalsIgnoreCase(username)){
                     throw new RequestException(Http.Status.BAD_REQUEST,"Either username or password is incorrect");
                 }
                 String accessToken = JwtUtil.getAccessToken(foundUser);
