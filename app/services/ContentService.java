@@ -2,6 +2,7 @@ package services;
 
 import static com.mongodb.client.model.Filters.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import constants.CollectionNames;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
@@ -11,6 +12,7 @@ import models.User;
 import models.content.BaseContent;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import play.libs.Json;
 import play.mvc.Http;
 import types.UserACL;
 import utils.AccessibilityUtil;
@@ -67,7 +69,7 @@ public class ContentService extends BaseService<BaseContent> {
                 content.getWriteACL().add(user.getId().toHexString());
                 content.setDashboardId(new ObjectId(dashboardId));
 
-                return save(content, CollectionNames.CONTENT, BaseContent.class);
+                 return save(content, CollectionNames.CONTENT, BaseContent.class);
             } catch (RequestException e) {
                 throw new CompletionException(e);
             } catch (Exception e) {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import models.BaseModel;
 import mongo.serializers.ObjectIdDeSerializer;
@@ -18,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type",visible = true)
@@ -40,6 +42,4 @@ public abstract class BaseContent extends BaseModel implements Content {
     @NotNull
     private Type type = Type.NONE;
 
-    private List<String> readACL = Collections.emptyList();
-    private List<String> writeACL = Collections.emptyList();
 }

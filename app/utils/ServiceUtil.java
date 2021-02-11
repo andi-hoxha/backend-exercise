@@ -51,7 +51,7 @@ public class ServiceUtil {
 
     public static Dashboard hierarchy(Dashboard dashboard, List<Dashboard> list) {
         List<Dashboard> children = list.stream()
-                .filter(el -> dashboard.getId().toHexString().equals(el.getParentId()))
+                .filter(el -> dashboard.getId().equals(el.getParentId()))
                 .map(next -> hierarchy(next, list))
                 .collect(Collectors.toList());
         dashboard.setChildren(children);

@@ -3,6 +3,7 @@ package models.content;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @BsonDiscriminator(key = "type",value = "LINE")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)

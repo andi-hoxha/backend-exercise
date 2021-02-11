@@ -9,11 +9,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mongo.serializers.PasswordDeserializer;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
+import org.bson.types.ObjectId;
 import types.UserRole;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -37,4 +39,10 @@ public class User extends BaseModel {
 
     private String accessToken = UserRole.EMPTY.name();
 
+    @BsonIgnore
+    public List<String> getUserRoles() {
+        List<String> roles = this.getRoles().stream().map(BaseModel::getId).map(ObjectId::toHexString).collect(Collectors.toList());
+        roles.add(this.getId().toHexString());
+        return roles;
+    }
 }

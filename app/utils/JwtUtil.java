@@ -22,7 +22,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public static Claims parse(String token){
+    public static Claims parse(String token) throws RequestException{
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey(JwtConstants.SECRET_ACCESS)
@@ -33,11 +33,9 @@ public class JwtUtil {
             }
             return claims;
         }catch (ExpiredJwtException e){
-            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED,"JWT token has been expired"));
-        }catch (RequestException e){
-            throw new CompletionException(e);
+            throw new RequestException(Http.Status.UNAUTHORIZED,"Token has been expired!");
         }catch (Exception e){
-            throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Authentication service unavailable"));
+            throw new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Authentication service unavailable");
         }
     }
 }

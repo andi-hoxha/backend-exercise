@@ -27,5 +27,4 @@ public class ChatRoom extends BaseModel {
 
     private List<String> groupMembers = Collections.emptyList();
     private ChannelType channelType;
-    private List<String> writeACL = Collections.emptyList();
 }

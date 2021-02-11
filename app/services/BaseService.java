@@ -2,6 +2,7 @@ package services;
 
 import com.google.inject.Inject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
 import mongo.IMongoDB;
@@ -29,8 +30,8 @@ public class BaseService<T> implements BaseRepository<T> {
 
     @Override
     public T save(T t, String collectionName, Class<T> tClass) {
-            BsonValue id = getCollection(collectionName, tClass).insertOne(t).getInsertedId();
-            return getCollection(collectionName, tClass).find(eq("_id", id)).first();
+       getCollection(collectionName, tClass).insertOne(t);
+       return t;
     }
 
     @Override
@@ -68,6 +69,10 @@ public class BaseService<T> implements BaseRepository<T> {
     @Override
     public List<T> findMany(String collectionName,Bson filters, Class<T> objectClass){
         return getCollection(collectionName,objectClass).find(filters).into(new ArrayList<>());
+    }
+
+    public MongoDatabase getMongoDatabase(){
+        return mongoDB.getMongoDatabase();
     }
 
 }

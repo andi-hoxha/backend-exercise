@@ -5,9 +5,10 @@ import static com.mongodb.client.model.Filters.*;
 import constants.CollectionNames;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
+import io.goprime.mongolay.AccessLevelType;
+import io.goprime.mongolay.MongoRelay;
 import models.Dashboard;
 import models.User;
-import org.bson.conversions.Bson;
 import play.mvc.Http;
 import types.UserACL;
 import utils.AccessibilityUtil;
@@ -34,17 +35,13 @@ public class DashboardService extends BaseService<Dashboard> {
     public CompletableFuture<List<Dashboard>> getAll(User user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if(user == null){
-                    throw new RequestException(Http.Status.BAD_REQUEST,"User cannot be null");
-                }
-                List<String> rolesAndUserId = ServiceUtil.userRoles(user);
-                Bson filter = or(
-                        (and(size("readACL", 0), size("writeACL", 0))),
-                        (or(in("readACL", rolesAndUserId), in("writeACL", rolesAndUserId)))
-                );
-                return findMany(CollectionNames.DASHBOARD, filter, Dashboard.class);
-            }catch (RequestException e){
-                throw new CompletionException(e);
+                MongoRelay mongoRelay = new MongoRelay(getMongoDatabase(),user.getUserRoles())
+                        .withACL(Dashboard.class,AccessLevelType.READ);
+                return mongoRelay.on(Dashboard.class).getCollection().find().into(new ArrayList<>());
+            }catch (NullPointerException | IllegalArgumentException e){
+                throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,"invalid_paramaters"));
+            }catch (Exception e){
+                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service_unavailable"));
             }
         },ec.current());
     }
@@ -57,9 +54,14 @@ public class DashboardService extends BaseService<Dashboard> {
                 }
                 dashboard.setCreatedAt(new Timestamp(System.currentTimeMillis()));
                 dashboard.getWriteACL().add(user.getId().toHexString());
-                return save(dashboard, CollectionNames.DASHBOARD, Dashboard.class);
+                MongoRelay mongoRelay = new MongoRelay(getMongoDatabase(),user.getUserRoles()).withACL(Dashboard.class,AccessLevelType.WRITE);
+                return mongoRelay.on(Dashboard.class).getCollection().insertOrUpdate(dashboard);
             }catch (RequestException e){
+                e.printStackTrace();
                 throw new CompletionException(e);
+            }catch (Exception e){
+                e.printStackTrace();
+                throw new CompletionException(new RequestException(Http.Status.INTERNAL_SERVER_ERROR,"Service_unavailable"));
             }
         },ec.current());
     }

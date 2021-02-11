@@ -2,12 +2,14 @@ package models.content;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
+@EqualsAndHashCode(callSuper = true)
 @BsonDiscriminator(key = "type",value = "EMAIL")
 @Data
 @AllArgsConstructor

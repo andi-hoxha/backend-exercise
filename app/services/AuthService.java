@@ -12,7 +12,6 @@ import utils.JwtUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 

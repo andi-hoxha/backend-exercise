@@ -1,12 +1,14 @@
 package services;
 
 import actions.Authorized;
+import com.fasterxml.jackson.databind.JsonNode;
 import constants.CollectionNames;
 import exceptions.RequestException;
 import executors.MongoExecutionContext;
 import models.ChatRoom;
 import models.User;
 import org.bson.conversions.Bson;
+import play.libs.Json;
 import play.mvc.Http;
 import types.ChannelType;
 import types.UserACL;
@@ -14,7 +16,9 @@ import utils.AccessibilityUtil;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -46,7 +50,7 @@ public class ChatRoomService extends BaseService<ChatRoom> {
         },ec.current());
     }
 
-    public CompletableFuture<ChatRoom> createChannel(User user,ChatRoom chatRoom){
+    public CompletableFuture<ChatRoom> createChannel(User user, ChatRoom chatRoom){
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if(user == null || chatRoom == null){
@@ -54,12 +58,12 @@ public class ChatRoomService extends BaseService<ChatRoom> {
                 }
                 chatRoom.setGroupAdmin(user.getId());
                 if (chatRoom.getChannelType().name().equals(ChannelType.PRIVATE.name())) {
-                    List<String> writeACL = new ArrayList<>();
+                    Set<String> writeACL = new HashSet<>();
                     writeACL.add(user.getId().toHexString());
                     writeACL.addAll(chatRoom.getGroupMembers());
                     chatRoom.setWriteACL(writeACL);
                 }
-                return save(chatRoom, CollectionNames.CHANNEL, ChatRoom.class);
+                  return save(chatRoom, CollectionNames.CHANNEL, ChatRoom.class);
             }catch (RequestException e){
                 throw new CompletionException(e);
             }catch (Exception e){
